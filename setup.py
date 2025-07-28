@@ -57,10 +57,39 @@ ext_modules = [
         language='c++',
         extra_compile_args=extra_compile_args+['-std=c++11'],
         include_dirs=INCLUDE_DIRS, library_dirs=LIBRARY_DIRS
+    ),
+    Extension(
+        'extended_hilbert_modgroup.extended_pullback_cython',
+        sources=[os.path.join('src/extended_hilbert_modgroup/extended_pullback_cython.pyx')],
+        language='c++',
+        extra_compile_args=extra_compile_args + ['-std=c++11'],
+        include_dirs=INCLUDE_DIRS, library_dirs=LIBRARY_DIRS
+    ),
+    Extension(
+        'extended_hilbert_modgroup.extended_hilbert_modular_group_element',
+        sources=[os.path.join('src/extended_hilbert_modgroup/extended_hilbert_modular_group_element.pyx')],
+        extra_compile_args=extra_compile_args,
+        include_dirs=INCLUDE_DIRS, library_dirs=LIBRARY_DIRS
     )
 ]
 
+#setuptools.setup(
+#    ext_modules=cythonize(
+#        ext_modules,
+#        include_path=['src', SAGE_LIB],
+#        compiler_directives={
+#            'embedsignature': True,
+#            'language_level': '3',
+#        },
+#    ),
+#)
 setuptools.setup(
+    name="hilbertmodgroup",  # Project name
+    version="0.1.0",                 # Version number
+    author="Your Name",              # Replace with your name
+    description="A brief description of your project",
+    long_description=open("README.md").read(),  # Ensure README.md is present
+    long_description_content_type="text/markdown",
     ext_modules=cythonize(
         ext_modules,
         include_path=['src', SAGE_LIB],
@@ -69,4 +98,12 @@ setuptools.setup(
             'language_level': '3',
         },
     ),
+    packages=setuptools.find_packages('src'),  # Adjust if needed
+    package_dir={'': 'src'},
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",  # Adjust license if necessary
+        "Operating System :: OS Independent",
+    ],
+    python_requires='>=3.6',
 )

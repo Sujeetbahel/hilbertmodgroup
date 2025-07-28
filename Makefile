@@ -7,7 +7,7 @@ ifeq (,$(DOCKER)$(shell which sage))
 endif
 # Command line arguments:
 # Set to 0 to use local source instead of GIT
-REMOTE_SRC=1
+REMOTE_SRC=0
 # Set to desired git branch
 GIT_BRANCH=main
 # Port for notebook
@@ -45,8 +45,8 @@ examples:
                             --NotebookApp.browser=x-www-browser
 
 tox:
-	sage -pip install tox meson
-	sage --python -m tox -c tox.ini -e $(TOX_ARGS)
+	sage -pip install tox
+	sage --python -m tox src-c tox.ini -e $(TOX_ARGS)
 
 docker:
 	docker build --build-arg GIT_BRANCH=$(GIT_BRANCH) --build-arg REMOTE_SRC=$(REMOTE_SRC) -t hilbertmodgroup-$(TAG) .
