@@ -2,6 +2,8 @@ from sage.structure.element import Element
 from sage.structure.richcmp import richcmp, rich_to_bool
 from sage.modular.cusps_nf import NFCusps, NFCusp
 from sage.modular.cusps_nf import list_of_representatives, units_mod_ideal
+import itertools
+from sage.modular.modsym.p1list_nf import p1NFlist, psi
 
 
 def gens_reduced_wrt_base_ideal(base_ideal, ideal):
@@ -9,7 +11,7 @@ def gens_reduced_wrt_base_ideal(base_ideal, ideal):
         Return the two generators (a, b) of the ideal in the sense, ideal= a*OK + b*(base_ideal.inverse())
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import gens_reduced_wrt_base_ideal
+            sage: from hilbert_modgroup.all import gens_reduced_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 5)
             sage: base_ideal=K.different()
@@ -38,6 +40,7 @@ def gens_reduced_wrt_base_ideal(base_ideal, ideal):
             return tuple((a, 0))
         else:
             a = ideal.gens_reduced()[0]
+            # new = K.fractional_ideal(a)
             temp = base_ideal * ideal
             if temp.is_principal():
                 b = temp.gens_reduced()[0]
@@ -55,7 +58,7 @@ def ideal_wrt_base_ideal(base_ideal, x: tuple):
         Return the ideal  in the sense, ideal = a*OK + b*(base_ideal.inverse())
 
         EXAMPLES::
-            sage: sage: from extended_hilbert_modgroup.all import ideal_wrt_base_ideal
+            sage: sage: from hilbert_modgroup.all import ideal_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 5)
             sage: base_ideal=K.different()
@@ -106,7 +109,7 @@ class NFCusp_wrt_base_ideal(Element):
     ``[a: b]`` -- a number field cusp with respect to the base ideal I.
 
     EXAMPLES::
-        sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+        sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
         sage: x = polygen(ZZ, 'x')
         sage: K.<a> = NumberField(x^2 - 5)
         sage: OK=K.OK()
@@ -120,7 +123,7 @@ class NFCusp_wrt_base_ideal(Element):
 
     Cusp Infinity:
 
-    ::  sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+    ::  sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
         sage: NFCusp_wrt_base_ideal(base_ideal, 0)
         Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
         sage: NFCusp_wrt_base_ideal(base_ideal, oo)
@@ -177,7 +180,7 @@ class NFCusp_wrt_base_ideal(Element):
         String representation of this cusp.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 3)
             sage: base_ideal =K.different()
@@ -199,7 +202,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the base ideal associated to the cusp.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 3)
             sage: base_ideal =K.different()
@@ -215,7 +218,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the ring of integers of the number field associated to the cusp.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 3)
             sage: base_ideal =K.different()
@@ -231,7 +234,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the number field associated to the cusp.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 3)
             sage: base_ideal =K.different()
@@ -247,7 +250,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return ``True`` if this is the cusp infinity.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 3)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -265,7 +268,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the numerator of the cusp ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 -5)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -285,7 +288,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the numerator of the cusp ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 -5)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -305,7 +308,7 @@ class NFCusp_wrt_base_ideal(Element):
         Coerce to an element of the number field.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 5)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -324,7 +327,7 @@ class NFCusp_wrt_base_ideal(Element):
         Coerce to an element of the ring of integers of the number field.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 -3)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -351,7 +354,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the representation of this cusp.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 11)
             sage: base_ideal = K.different()
@@ -371,13 +374,13 @@ class NFCusp_wrt_base_ideal(Element):
         Compare the cusps ``self`` and ``right``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2-5)
             sage: base_ideal = K.OK().fractional_ideal(2)
 
         Comparing with infinity::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: c = NFCusp_wrt_base_ideal(base_ideal, a,2)
             sage: d = NFCusp_wrt_base_ideal(base_ideal, oo)
             sage: c < d
@@ -386,7 +389,7 @@ class NFCusp_wrt_base_ideal(Element):
             False
 
         Comparison as elements of the number field::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: NFCusp_wrt_base_ideal(base_ideal, 2/3) < NFCusp_wrt_base_ideal(base_ideal, 5/2)
             True
             sage: K(2/3) < K(5/2)
@@ -409,7 +412,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the negative of this cusp.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 11)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -435,7 +438,7 @@ class NFCusp_wrt_base_ideal(Element):
         ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 23)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -453,7 +456,7 @@ class NFCusp_wrt_base_ideal(Element):
         Return the ideal associated to the cusp ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 -7)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -472,7 +475,7 @@ class NFCusp_wrt_base_ideal(Element):
         EXAMPLES:
 
         ::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 11)
             sage: base_ideal = K.OK().fractional_ideal(2)
@@ -570,7 +573,7 @@ class NFCusp_wrt_base_ideal(Element):
         EXAMPLES:
 
         ::
-            sage: from exteded_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 3)
             sage: N = K.fractional_ideal(1)
@@ -592,7 +595,7 @@ class NFCusp_wrt_base_ideal(Element):
             1
 
         ::
-            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_base_ideal
+            sage: from hilbert_modgroup.all import NFCusp_wrt_base_ideal
             sage: K.<a> = NumberField(x^2 - 5)
             sage: N = K.fractional_ideal(1)
             sage: base_ideal = K.different()
@@ -681,3 +684,187 @@ class NFCusp_wrt_base_ideal(Element):
             return False
         else:
             return False, 0
+
+
+def sign_matrix_real_field(K):
+    """
+    Compute the sign matrix of a totally real number field K.
+    Rows = embeddings into RR
+    Columns = generators (-1 and fundamental units)
+
+    """
+    # Step 1: get units (fundamental units)
+    Uk = K.unit_group()
+    gens = Uk.gens_values()  # list of fundamental units
+    # gens = [-1] + fund_units  # include -1
+
+    # Step 2: get embeddings into RR
+    embs = K.embeddings(RR)
+
+    # Step 3: build the sign matrix
+    data = []
+    for phi in embs:
+        row = []
+        for g in gens:
+            val = phi(g)
+            row.append(1 if val > 0 else -1)
+        data.append(row)
+
+    return Matrix(ZZ, data)
+
+
+def totally_positive_unit_group_generators(K):
+    Uk = K.unit_group()
+    ulist = Uk.gens_values()
+    n = len(ulist)
+    vlist = list(itertools.product([0, 1], repeat=n))
+    M = sign_matrix_real_field(K)
+    M = M.apply_map(lambda x: 0 if x == 1 else 1).change_ring(GF(2))
+    gens = []
+    for v in vlist:
+        v = vector(GF(2), v)
+        t = M * v
+        if t.is_zero():
+            gen = 1
+            for i in range(0, n):
+                value = ulist[i] ** v[i]
+                gen = gen * value
+            gens.append(gen)
+    for i in range(1, n):
+        if all(ulist[i] ** 2 != g ** 2 for g in gens):
+            gens.append(ulist[i] ** 2)
+    return gens
+
+
+def number_of_Gamma0_NFCusps_wrt_base_ideal(N, gens):
+    k = N.number_field()
+    # The number of Gamma0(N)-sub-orbits for each Gamma-orbit:
+    from sage.arith.misc import divisors
+    # Ugens = [k(u) for u in totally_positive_unit_group_generators(k)]
+    s = sum([len((d + N / d).invertible_residues_mod(gens))
+             for d in divisors(N)])
+    # There are h Gamma-orbits, with h class number of underlying number field.
+    return s * k.class_number()
+
+
+def units_mod_ideal_wrt_base_ideal(I):
+    k = I.number_field()
+    Istar = I.idealstar(2)
+    ulist = totally_positive_unit_group_generators(K)
+    elist = [Istar(I.ideallog(u)).order() for u in ulist]
+
+    from sage.misc.mrange import xmrange
+    return [k.prod(u ** e for u, e in zip(ulist, ei)) for ei in xmrange(elist)]
+
+
+def NFCusps_ideal_reps_for_levelN(N, nlists=1):  # We assume that base_ideal is coprime to N
+    k = N.number_field()
+    G = k.class_group()
+    L = [[k.ideal(1)] for _ in range(nlists)]
+    it = k.primes_of_degree_one_iter()
+    for I in G.list():
+        check = 0
+        if not I.is_principal():
+            Iinv = I.ideal() ** (-1)
+            while check < nlists:
+                J = next(it)
+                if (J * Iinv).is_principal() and J.is_coprime(N):
+                    L[check].append(J)
+                    check += 1
+    return [tuple(l) for l in L]
+
+
+def Gamma0_NFCusps_wrt_base_ideal(N, base_ideal, gens):
+    # We create L a list of three lists, which are different and each a list of
+    # prime ideals, coprime to N, representing the ideal classes of k
+    L = NFCusps_ideal_reps_for_levelN(N, nlists=3)
+    Laux = L[1] + L[2]
+    Lreps = list_of_representatives(base_ideal * N)
+    Lcusps = []
+
+    k = N.number_field()
+
+    for A in L[0]:
+        A = A
+        # find B in inverse class:
+        if A.is_trivial():
+            B = k.ideal(1)
+            # B = k.unit_ideal() produces an error because we need fract ideal
+            g = 1
+        else:
+            Lbs = [P for P in Laux if (P * A).is_principal()]
+            B = Lbs[0]
+            g = (A * B).gens_reduced()[0]
+
+        # for every divisor of N we have to find cusps
+        from sage.arith.misc import divisors
+        for d in divisors(N):
+            # find delta prime coprime to B in inverse class of d*A
+            # by searching in our list of auxiliary prime ideals
+            Lds = [P for P in Laux if (P * base_ideal * d * A).is_principal() and P.is_coprime(B)]
+            deltap = Lds[0]
+            a = (deltap * base_ideal * d * A).gens_reduced()[0]
+            I = d + N / d
+            # special case: A=B=d=<1>:
+            if a.is_one() and I.is_trivial():
+                Lcusps.append(NFCusp_wrt_base_ideal(base_ideal, 0, 1, lreps=Lreps))
+            else:
+                # u = totally_positive_unit_group_generators(k)
+                for b in I.invertible_residues_mod(gens):
+                    # Note: if I trivial, invertible_residues_mod returns [1]
+                    # lift b to (R/a)star
+                    # we need the part of d which is coprime to I, call it M
+                    M = d.prime_to_idealM_part(I)
+                    deltAM = deltap * base_ideal * A * M
+                    u = (B * deltAM).element_1_mod(I)
+                    v = (I * B).element_1_mod(deltAM)
+                    newb = u * b + v
+                    # build AB-matrix:
+                    # ----> extended gcd for k.ideal(a), k.ideal(newb)
+                    A1 = a * (base_ideal.inverse()) * (A.inverse())
+                    A2 = newb * B.inverse()
+                    r = A2.element_1_mod(A1)
+                    a1 = (r / newb) * g
+                    b1 = -(1 - r) / a * g
+                    # if xa + yb = 1, cusp = y*g /a
+                    ABM = [a1, b1, a, newb]
+                    Lcusps.append(NFCusp_wrt_base_ideal(base_ideal, a1, a, lreps=Lreps))
+    return Lcusps
+
+
+def coset_matrices(N, base_ideal):
+    k = N.number_field()
+    # L = [MSymbol(N, k(0), k(1), check=False)]
+    # N.residues() = iterator through the residues mod N
+    # L = L + [MSymbol(N, k(1), r, check=False) for r in N.residues()]
+    L = []
+    from sage.arith.misc import divisors
+    for D in divisors(N):
+        if (D * base_ideal).is_principal():
+            Dp = k.ideal(1)
+            c = (D * base_ideal * Dp).gens_reduced()[0]
+        else:
+            it = k.primes_of_degree_one_iter()
+            Dp = next(it)
+            while not Dp.is_coprime(N) or not (Dp * D * base_ideal).is_principal():
+                Dp = next(it)
+            c = (D * base_ideal * Dp).gens_reduced()[0]
+        I = D + N / D
+        for r in (N / D).residues():
+            if I.is_coprime(r):
+                M = D.prime_to_idealM_part(N / D)
+                u = (Dp * M).element_1_mod(N / D)
+                d = u * r + (1 - u)  # Our M-symbol is (c: d)
+                # print( r, u, c, d)
+                if c - 1 in N:
+                    L.append(Matrix(k, 2, 2, [k(0), k(-1), 1, d]))
+                elif d - 1 in N:
+                    L.append(Matrix(k, 2, 2, [k(1), k(0), c, 1]))
+                elif d.is_zero():
+                    L.append(Matrix(k, 2, 2, [1, -1 / c, c, d]))
+                else:
+                    B = k.ideal(c * base_ideal.inverse()).element_1_mod(k.ideal(d))
+                    b = -B / c
+                    a = (1 - B) / d
+                    L.append(Matrix(k, 2, 2, [a, b, c, d]))
+    return L
