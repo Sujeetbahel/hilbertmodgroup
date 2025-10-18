@@ -19,7 +19,7 @@ from hilbert_modgroup.upper_half_plane import \
     ComplexPlaneProductElement__class, \
     UpperHalfPlaneProductElement__class, UpperHalfPlaneProductElement
 
-from extended_hilbert_modgroup.cusp_nf_wrt_base_ideal import NFCusp_wrt_base_ideal
+from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import NFCusp_wrt_base_ideal
 from hilbert_modgroup.utils import upper, lower
 import logging
 

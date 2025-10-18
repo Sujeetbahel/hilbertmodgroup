@@ -1,3 +1,4 @@
+#%%cython
 from sage.structure.element cimport MultiplicativeGroupElement
 from sage.structure.richcmp cimport richcmp
 from sage.rings.all import ZZ
@@ -7,8 +8,8 @@ from sage.matrix.matrix_generic_dense cimport Matrix_generic_dense
 from sage.misc.cachefunc import cached_method
 from sage.rings.number_field.unit_group import UnitGroup
 from sage.rings.infinity import is_Infinite, infinity
-from hilbert_modgroup.upper_half_plane cimport ComplexPlaneProductElement__class, UpperHalfPlaneProductElement__class
-
+from hilbert_modgroup.upper_half_plane cimport ComplexPlaneProductElement__class
+from hilbert_modgroup.upper_half_plane cimport UpperHalfPlaneProductElement__class
 
 cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
     cdef Matrix_generic_dense __x
@@ -27,8 +28,8 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
 
         EXAMPLES::
 
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+            sage: from hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: from hilbert_modgroup.all import ExtendedHilbertModularGroupElement
             sage: H=ExtendedHilbertModularGroup(5)
             sage: TestSuite(H).run()
             sage: x,y=H.OK().gens()
@@ -38,26 +39,28 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             sage: ExtendedHilbertModularGroupElement(H,[1,x,0,1]) in H
             True
             sage: K.<a> = QuadraticField(3)
-            sage: base_ideal = K.different()
+            sage: lattice_ideal = K.different()
             sage: f = K.unit_group().fundamental_units()[0]
-            sage: H=ExtendedHilbertModularGroup(base_ideal)
+            sage: H=ExtendedHilbertModularGroup(lattice_ideal)
             sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, 0, f]);A
-            matrix must have determinant equal to totally positive unit
+            matrix must have determinant equal to  totally positive unit
         """
         #print(" in init withx=",parent,x)
         if not 'ExtendedHilbertModularGroup_class' in parent.__class__.__name__:
-            raise TypeError("parent (= {0}) must be a Extended Hilbert Modular group".format(parent))
+            raise ValueError("parent (= {0}) must be a Extended Hilbert Modular group".format(parent))
         x = MatrixSpace(parent.base_ring(), 2, 2)(x, copy=True, coerce=True)
-        if x.determinant() not in UnitGroup(parent.base_ring()):
-            raise TypeError("matrix must have determinant equal to a unit")
-        if not x.determinant().is_totally_positive():
-            raise TypeError("matrix must have determinant equal to totally positive unit")
-        if not x[0, 1] in parent.base_ideal().inverse():
-            raise TypeError("matrix M must have M[0, 1] element in base_ideal.inverse()")
-        if not x[1, 0] in parent.base_ideal():
-            raise TypeError("matrix M must have M[1, 0] element in base_ideal")
+        if parent.tp_unit():
+            if not (x.determinant().is_unit() and x.determinant().is_totally_positive()):
+                raise TypeError("matrix must have determinant equal to totally positive unit")
+        else:
+            if not (x.determinant == 1):
+                raise TypeError("matrix must have determinant 1")
+        if not x[0, 1] in parent.lattice_ideal().inverse():
+            raise TypeError("matrix must have M[0, 1] entry in lattice_ideal.inverse()")
+        if not x[1, 0] in (parent.lattice_ideal() * parent.level_ideal()):
+            raise TypeError("matrix must have M[1, 0] element in lattice_ideal*level_ideal")
         if not (x[0, 0] in parent.OK() and x[1, 1] in parent.OK()):
-            raise TypeError("matrix M must have elements M[0, 0], M[1, 1] in base_ideal")
+            raise TypeError("matrix must have elements M[0, 0], M[1, 1] in OK")
         x.set_immutable()
         MultiplicativeGroupElement.__init__(self, parent)
         self.__x = x
@@ -74,8 +77,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         List of ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+            sage: from hilbert_modgroup.hilbert_modular_group_class import ExtendedHilbertModularGrou
             sage: H=ExtendedHilbertModularGroup(5)
             sage: x, y = H.number_field().OK().gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, x, 0, 1])
@@ -89,11 +91,9 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the string representation of ``self``.
 
         EXAMPLES::
-        sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-        sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
         sage: K = QuadraticField(3)
-        sage: base_ideal = K.different()
-        sage: H=ExtendedHilbertModularGroup(base_ideal); H
+        sage: lattice_ideal = K.different()
+        sage: H=ExtendedHilbertModularGroup(lattice_ideal); H
         Extended Hilbert modular group of order 2 (over Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878?) of the
         forms P[OK+I], consisting of matrices with determinants that are totally positive units in OK, where OK is the ring of integers and I is
         Fractional ideal (-2*a)
@@ -105,8 +105,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the latex representation of ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: H=ExtendedHilbertModularGroup(5)
             sage: x,y=H.OK().gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1,x,0,1])
@@ -140,11 +139,10 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the determinant of ``self``, which is always a positive unit.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
             sage: x,y=H.OK().gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, x, 0, 1])
             sage: A.determinant()
@@ -157,11 +155,10 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the upper left entry of ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
             sage: x,y=H.OK().gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, x, 0, 1])
             sage: A.a()
@@ -174,12 +171,11 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the upper right entry of ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
-            sage: x,y=(base_ideal**-1).gens()
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: x,y=(lattice_ideal**-1).gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, y, 0, 1])
             sage: A.b()
             1/10*a + 1/2
@@ -192,12 +188,11 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the upper right entry of ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
-            sage: x,y=(base_ideal**-1).gens()
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: x,y=(lattice_ideal**-1).gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, y, 0, 1])
             sage: A.c()
             0
@@ -210,12 +205,11 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the upper right entry of ``self``.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
-            sage: x,y=(base_ideal**-1).gens()
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: x,y=(lattice_ideal**-1).gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, y, 0, 1])
             sage: A.d()
             1
@@ -228,10 +222,10 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the self*right
 
         Example::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
+            sage: from hilbert_modgroup.hilbert_modular_group_class import ExtendedHilbertModularGroup
             sage: K = QuadraticField(3)
-            sage: base_ideal = K.different()
+            sage: lattice_ideal = K.different()
             sage: H=ExtendedHilbertModularGroup(5)
             sage: x,y=H.OK().gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, x, 0, 1])
@@ -249,12 +243,10 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         transformation.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
-            sage: x,y=(base_ideal**-1).gens()
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: x,y=(lattice_ideal**-1).gens()
             sage: f = K.unit_group().fundamental_units()[0]
             sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, y**-1, f**2])
             [           1            0]
@@ -290,7 +282,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
 
         An example acting on the NFCusp elements
             sage:
-            sage: c=NFCusp_wrt_base_ideal(K,-a,1)
+            sage: c=NFCusp_wrt_lattice_ideal(K,-a,1)
             sage: c
             Cusp [-a: 1] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to the base ideal
             Fractional ideal (-a)
@@ -335,11 +327,9 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
 
         EXAMPLES::
 
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.ideal(1)
-            sage: H=ExtendedHilbertModularGroup(base_ideal)
+            sage: lattice_ideal = K.ideal(1)
+            sage: H=ExtendedHilbertModularGroup(lattice_ideal)
             sage: A = ExtendedHilbertModularGroupElement(H, [3, 2, 1, 1])
             sage: A[0, 0]
             3
@@ -351,11 +341,10 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         return the hash value associated to self.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.ideal(1)
-            sage: H=ExtendedHilbertModularGroup(base_ideal)
+            sage: lattice_ideal = K.ideal(1)
+            sage: H=ExtendedHilbertModularGroup(lattice_ideal)
             sage: A = ExtendedHilbertModularGroupElement(H, [3, 2, 1, 1])
             sage: hash(A)
             4303834509739506107
@@ -370,12 +359,11 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         Return the trace of the trace of the matrix of self.
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
-            sage: x,y=(base_ideal**-1).gens()
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: x,y=(lattice_ideal**-1).gens()
             sage: f = K.unit_group().fundamental_units()[0]
             sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, y**-1, f**2]); A
             [           1            0]
@@ -397,12 +385,11 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         - ``prec`` integer (default=53) number of bits precision
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
+
             sage: K = QuadraticField(5)
-            sage: base_ideal = K.different()
-            sage: H = ExtendedHilbertModularGroup(base_ideal)
-            sage: x,y=(base_ideal**-1).gens()
+            sage: lattice_ideal = K.different()
+            sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: x,y=(lattice_ideal**-1).gens()
             sage: f = K.unit_group().fundamental_units()[0]
             sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, y**-1, f**2]); A
             [           1            0]

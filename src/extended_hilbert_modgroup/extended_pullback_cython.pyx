@@ -1,4 +1,4 @@
-%%cython
+#%%cython
 #cython: profile=True
 """
 Cython versions of Extended Pullback algorithms.
