@@ -1,15 +1,10 @@
-#%%cython
 from sage.structure.element cimport MultiplicativeGroupElement
 from sage.structure.richcmp cimport richcmp
 from sage.rings.all import ZZ
-from sage.rings.infinity import infinity
 from sage.matrix.matrix_space import MatrixSpace
 from sage.matrix.matrix_generic_dense cimport Matrix_generic_dense
 from sage.misc.cachefunc import cached_method
-from sage.rings.number_field.unit_group import UnitGroup
-from sage.rings.infinity import is_Infinite, infinity
 from hilbert_modgroup.upper_half_plane cimport ComplexPlaneProductElement__class
-from hilbert_modgroup.upper_half_plane cimport UpperHalfPlaneProductElement__class
 
 cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
     cdef Matrix_generic_dense __x
@@ -49,12 +44,12 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         if not 'ExtendedHilbertModularGroup_class' in parent.__class__.__name__:
             raise ValueError("parent (= {0}) must be a Extended Hilbert Modular group".format(parent))
         x = MatrixSpace(parent.base_ring(), 2, 2)(x, copy=True, coerce=True)
-        if parent.tp_unit():
+        if parent.tp_units():
             if not (x.determinant().is_unit() and x.determinant().is_totally_positive()):
                 raise TypeError("matrix must have determinant equal to totally positive unit")
         else:
             if not (x.determinant == 1):
-                raise TypeError("matrix must have determinant 1")
+                raise TypeError("matrix testing must have determinant 1")
         if not x[0, 1] in parent.lattice_ideal().inverse():
             raise TypeError("matrix must have M[0, 1] entry in lattice_ideal.inverse()")
         if not x[1, 0] in (parent.lattice_ideal() * parent.level_ideal()):

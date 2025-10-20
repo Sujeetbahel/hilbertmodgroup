@@ -4,96 +4,16 @@ from sage.rings.complex_mpfr import ZZ
 from sage.structure.element import Element
 from sage.structure.richcmp import richcmp, rich_to_bool
 from sage.modular.cusps_nf import NFCusps, NFCusp
-from sage.modular.cusps_nf import list_of_representatives, units_mod_ideal
+from sage.modular.cusps_nf import list_of_representatives
 import itertools
-from sage.modular.modsym.p1list_nf import p1NFlist, psi
 from sage.matrix.constructor import Matrix
-#from sympy import GF
 from sage.coding.kasami_codes import GF
-
-
-def gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal):
-    """
-        Return the two generators (a, b) of the ideal in the sense, ideal= a*OK + b*(lattice_ideal.inverse())
-
-        EXAMPLES::
-            sage: from hilbert_modgroup.all import gens_reduced_wrt_lattice_ideal
-            sage: x = polygen(ZZ, 'x')
-            sage: K.<a> = NumberField(x^2 - 5)
-            sage: lattice_ideal=K.different()
-            sage: ideal = K.fractional_ideal(3)
-            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
-            (3, 0)
-            sage: K1 = NumberField(x**4 - 17*x**2 + 36,names='a')
-            sage: a=K1.gen()
-            sage: lattice_ideal = K1.different()
-            sage: ideal = K1.fractional_ideal(2, a)
-            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
-            (2, 7/6*a^3 + 6*a^2 + 13/6*a - 51)
-    """
-    if not (lattice_ideal.number_field() == ideal.number_field()):
-        return "lattice_ideal and ideal should be from the same ring of integers of a field"
-    else:
-        K = lattice_ideal.number_field()
-        OK = K.OK()
-        if lattice_ideal == OK.fractional_ideal(1):
-            if ideal.is_principal():
-                return tuple((ideal.gens_reduced()[0], 0))
-            else:
-                return ideal.gens_reduced()
-        elif ideal.is_principal():
-            a = ideal.gens_reduced()[0]
-            return tuple((a, 0))
-        else:
-            a = ideal.gens_reduced()[0]
-            # new = K.fractional_ideal(a)
-            temp = lattice_ideal * ideal
-            if temp.is_principal():
-                b = temp.gens_reduced()[0]
-                return tuple((a, b))
-            else:
-                possible = list_of_representatives(ideal)
-                for inverse in possible:
-                    if (temp * inverse).is_principal():
-                        b = temp * inverse
-                return tuple((a, b.gens_reduced()[0]))
-
-
-def ideal_wrt_lattice_ideal(lattice_ideal, x: tuple):
-    """
-        Return the ideal  in the sense, ideal = a*OK + b*(lattice_ideal.inverse())
-
-        EXAMPLES::
-            sage: sage: from hilbert_modgroup.all import ideal_wrt_lattice_ideal
-            sage: x = polygen(ZZ, 'x')
-            sage: K.<a> = NumberField(x^2 - 5)
-            sage: lattice_ideal=K.different()
-            sage: ideal = K.fractional_ideal(3)
-            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
-            (3, 0)
-            sage: ideal_wrt_lattice_ideal(lattice_ideal, gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)) == ideal
-            True
-
-            sage: K1 = NumberField(x**4 - 17*x**2 + 36,names='a')
-            sage: a=K1.gen()
-            sage: lattice_ideal = K1.different()
-            sage: ideal = K1.fractional_ideal(2, a)
-            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
-            (2, 7/6*a^3 + 6*a^2 + 13/6*a - 51)
-            sage: ideal_wrt_lattice_ideal(lattice_ideal, gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)) == ideal
-            True
-    """
-    K = lattice_ideal.number_field()
-    if x[1] == 0:
-        return K.OK().fractional_ideal(x[0])
-    else:
-        return x[0] * K.OK().fractional_ideal(1) + x[1] * (lattice_ideal.inverse())
 
 
 class NFCusp_wrt_lattice_ideal(Element):
     r"""
-    Create a number field cusp, i.e., an element of `\mathbb{P}^1(k)` with respect to a base ideal.
-    In the standard cusp  for a field the base ideal is OK. Ideally they are same but the ideal
+    Create a number field cusp, i.e., an element of `\mathbb{P}^1(k)` with respect to a lattice_ideal.
+    In a standard cusp for a field the lattice_ideal is OK. Ideally they are same but the ideal
     represented by them differs. Moreover, the ABmatrix for the cusp will be different.
     parent- NFCusps.
     INPUT:
@@ -112,7 +32,7 @@ class NFCusp_wrt_lattice_ideal(Element):
 
     OUTPUT:
 
-    ``[a: b]`` -- a number field cusp with respect to the base ideal I.
+    ``[a: b]`` -- a number field cusp with respect to the lattice_ideal I.
 
     EXAMPLES::
         sage: from hilbert_modgroup.all import NFCusp_wrt_lattice_ideal
@@ -121,23 +41,23 @@ class NFCusp_wrt_lattice_ideal(Element):
         sage: OK=K.OK()
         sage: lattice_ideal=K.different()
         sage: NFCusp_wrt_lattice_ideal(lattice_ideal, a, 2)
-        Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
         sage: NFCusp_wrt_lattice_ideal(lattice_ideal, (a,2))
-        Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
         sage: NFCusp_wrt_lattice_ideal(k, a, 2/(a+1))
-        Cusp [a: 1/2*a - 1/2] of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp [a: 1/2*a - 1/2] of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
 
     Cusp Infinity:
 
     ::  sage: from hilbert_modgroup.all import NFCusp_wrt_lattice_ideal
         sage: NFCusp_wrt_lattice_ideal(lattice_ideal, 0)
-        Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
         sage: NFCusp_wrt_lattice_ideal(lattice_ideal, oo)
-        Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
         sage: NFCusp_wrt_lattice_ideal(lattice_ideal, 3*a, oo)
-        Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
         sage: NFCusp_wrt_lattice_ideal(lattice_ideal, a + 5, 0)
-        Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with respect to the base ideal Fractional ideal (-a)
+        Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with respect to the lattice_ideal Fractional ideal (-a)
     """
 
     def __init__(self, lattice_ideal, a, b=None, parent=None, lreps=None):
@@ -191,21 +111,21 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: K.<a> = NumberField(x^2 - 3)
             sage: lattice_ideal =K.different()
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, a, 2);c
-            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal Fractional ideal (-2*a)
+            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal Fractional ideal (-2*a)
             sage: c._repr_()
-            'Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal Fractional ideal (-2*a)'
+            'Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal Fractional ideal (-2*a)'
         """
         if self.__b.is_zero():
-            return "Cusp Infinity of %s with respect to the base ideal %s" % (
+            return "Cusp Infinity of %s with respect to the lattice_ideal %s" % (
                 self.parent().number_field(), self.lattice_ideal())
         else:
-            return "Cusp [%s: %s] of %s with respect to the base ideal %s" % (self.__a, self.__b,
-                                                                              self.parent().number_field(),
-                                                                              self.lattice_ideal())
+            return "Cusp [%s: %s] of %s with respect to the lattice_ideal %s" % (self.__a, self.__b,
+                                                                                 self.parent().number_field(),
+                                                                                 self.lattice_ideal())
 
     def lattice_ideal(self):
         """
-        Return the base ideal associated to the cusp.
+        Return the lattice_ideal associated to the cusp.
 
         EXAMPLES::
             sage: from hilbert_modgroup.all import NFCusp_wrt_lattice_ideal
@@ -213,7 +133,7 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: K.<a> = NumberField(x^2 - 3)
             sage: lattice_ideal =K.different()
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, a, 2);c
-            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal Fractional ideal (-2*a)
+            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal Fractional ideal (-2*a)
             sage: c.lattice_ideal()
             Fractional ideal (-2*a)
         """
@@ -229,7 +149,7 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: K.<a> = NumberField(x^2 - 3)
             sage: lattice_ideal =K.different()
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, a, 2);c
-            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal Fractional ideal (-2*a)
+            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal Fractional ideal (-2*a)
             sage: c.OK()
             Maximal Order generated by a in Number Field in a with defining polynomial x^2 - 3
         """
@@ -245,7 +165,7 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: K.<a> = NumberField(x^2 - 3)
             sage: lattice_ideal =K.different()
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, a, 2);c
-            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal Fractional ideal (-2*a)
+            Cusp [a: 2] of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal Fractional ideal (-2*a)
             sage: c.number_field()
             Number Field in a with defining polynomial x^2 - 3
         """
@@ -342,7 +262,7 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: NFCusp_wrt_lattice_ideal(lattice_ideal, 1, a + 1)._ring_of_integers_element_()
             Traceback (most recent call last):
             ...
-            TypeError: Cusp [1: a + 1] of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal
+            TypeError: Cusp [1: a + 1] of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal
             Fractional ideal (2) is not an integral element
         """
         if self.__b.is_one():
@@ -423,9 +343,9 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: K.<a> = NumberField(x^2 - 11)
             sage: lattice_ideal = K.OK().fractional_ideal(2)
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, a, a+1); c
-            Cusp [a: a + 1] of Number Field in a with defining polynomial x^2 - 11 with respect to the base ideal Fractional ideal (2)
+            Cusp [a: a + 1] of Number Field in a with defining polynomial x^2 - 11 with respect to the lattice_ideal Fractional ideal (2)
             sage: -c
-            Cusp [-a: a + 1] of Number Field in a with defining polynomial x^2 - 11 with respect to the base ideal Fractional ideal (2)
+            Cusp [-a: a + 1] of Number Field in a with defining polynomial x^2 - 11 with respect to the lattice_ideal Fractional ideal (2)
         """
         return NFCusp_wrt_lattice_ideal(self.lattice_ideal(), -self.__a, self.__b)
 
@@ -450,12 +370,12 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: lattice_ideal = K.OK().fractional_ideal(2)
             sage: beta = NFCusp_wrt_lattice_ideal(lattice_ideal, 0, 1)
             sage: beta.apply([0, -1, 1, 0])
-            Cusp Infinity of Number Field in a with defining polynomial x^2 - 23 with respect to the base ideal Fractional ideal (2)
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 23 with respect to the lattice_ideal Fractional ideal (2)
             sage: beta.apply([1, a, 0, 1])
-            Cusp [a: 1] of Number Field in a with defining polynomial x^2 - 23 with respect to the base ideal Fractional ideal (2)
+            Cusp [a: 1] of Number Field in a with defining polynomial x^2 - 23 with respect to the lattice_ideal Fractional ideal (2)
         """
         return NFCusp_wrt_lattice_ideal(self.lattice_ideal(), g[0] * self.__a + g[1] * self.__b,
-                                     g[2] * self.__a + g[3] * self.__b)
+                                        g[2] * self.__a + g[3] * self.__b)
 
     def ideal(self):
         """
@@ -474,9 +394,9 @@ class NFCusp_wrt_lattice_ideal(Element):
         """
         return ideal_wrt_lattice_ideal(self.lattice_ideal(), (self.__a, self.__b))
 
-    def ABmatrix_wrt_lattice_ideal(self, return_B=False):
+    def ABmatrix_wrt_lattice_ideal(self, return_B = False):
         """
-        Return AB-matrix associated to the cusp ``self``.
+        Return AB-matrix associated with the cusp ``self``.
 
         EXAMPLES:
 
@@ -526,7 +446,7 @@ class NFCusp_wrt_lattice_ideal(Element):
         if A.is_principal():
             B = K.fractional_ideal(1)
         else:
-            B = K.fractional_ideal(A.gens_reduced()[1]) / A
+            B = K.fractional_ideal((A.gens_reduced()[1]) ** 2) / A
         assert (A * B).is_principal()
         a1 = self.__a
         a2 = self.__b
@@ -555,12 +475,11 @@ class NFCusp_wrt_lattice_ideal(Element):
         else:
             return ABM
 
-    def is_Gamma0_wrt_lattice_ideal_equivalent(self, other, N, Transformation=False):
+    def is_Gamma0_wrt_lattice_ideal_equivalent(self, other, N, tp_units=True, Transformation=False):
         r"""
         Check if cusps ``self`` and ``other`` are `\Gamma_0(N)_wrt lattice_ideal`- equivalent.
 
         INPUT:
-
         - ``other`` -- a number field cusp wrt lattice_ideal or a list of two number field
           elements which define a cusp wrt lattice_ideal.
 
@@ -590,7 +509,7 @@ class NFCusp_wrt_lattice_ideal(Element):
             True
             sage: b, M = alpha.is_Gamma0_wrt_lattice_ideal_equivalent(beta, K.fractional_ideal(1),Transformation=True)
             sage: alpha.apply(M)
-            Cusp Infinity of Number Field in a with defining polynomial x^2 - 3 with respect to the base ideal Fractional ideal (-2*a)
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 3 with respect to the lattice_ideal Fractional ideal (-2*a)
             sage: M[2] in lattice_ideal
             True
             sage: M[1] in lattice_ideal.inverse()
@@ -630,37 +549,22 @@ class NFCusp_wrt_lattice_ideal(Element):
                 return False
         reps = list_of_representatives(N * self.lattice_ideal())
         alpha1 = NFCusp_wrt_lattice_ideal(self.lattice_ideal(), self, lreps=reps)
-        # print(alpha1.ideal())
         alpha2 = NFCusp_wrt_lattice_ideal(self.lattice_ideal(), other, lreps=reps)
-        # print(alpha2.ideal())
         delta = K.ideal(alpha1.__b) + N
         if (K.ideal(alpha2.__b) + N) != delta:
             if not Transformation:
                 return False
             else:
                 return False, 0
-
         M1, B1 = alpha1.ABmatrix_wrt_lattice_ideal(True)
-        # print(M1)
         M2, B2 = alpha2.ABmatrix_wrt_lattice_ideal(True)
         A = alpha1.ideal()
-        # print('A=', A)
-        # OK = self.number_field().OK().fractional_ideal(1)
-        # if not M1[1]:
-        #    B = M1[3]*OK
-        # elif not M1[3]:
-        #    B = M1[1] * self.lattice_ideal()
-        # else:
-        #    B = M1[1] * self.lattice_ideal() + M1[3] * OK
-        # B = OK
-        # print('B=', B)
         if B1 == B2:
             B = B1
         else:
             return 'B1 and B2 should be same'
         ABdelta = A * B * delta * delta * self.lattice_ideal()
-
-        units = units_mod_ideal(ABdelta)
+        units = units_mod_ideal(ABdelta, tp_units)
         for u in units:
             if (M2[2] * M1[3] - u * M1[2] * M2[3]) in ABdelta:
                 if not Transformation:
@@ -692,6 +596,84 @@ class NFCusp_wrt_lattice_ideal(Element):
             return False, 0
 
 
+def gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal):
+    """
+        Return the two generators (a, b) of the ideal in the sense, ideal= a*OK + b*(lattice_ideal.inverse())
+
+        EXAMPLES::
+            sage: from hilbert_modgroup.all import gens_reduced_wrt_lattice_ideal
+            sage: x = polygen(ZZ, 'x')
+            sage: K.<a> = NumberField(x^2 - 5)
+            sage: lattice_ideal=K.different()
+            sage: ideal = K.fractional_ideal(3)
+            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
+            (3, 0)
+            sage: K1 = NumberField(x**4 - 17*x**2 + 36,names='a')
+            sage: a=K1.gen()
+            sage: lattice_ideal = K1.different()
+            sage: ideal = K1.fractional_ideal(2, a)
+            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
+            (2, 7/6*a^3 + 6*a^2 + 13/6*a - 51)
+    """
+    if not (lattice_ideal.number_field() == ideal.number_field()):
+        return "lattice_ideal and ideal should be from the same ring of integers of a field"
+    else:
+        K = lattice_ideal.number_field()
+        OK = K.OK()
+        if lattice_ideal == OK.fractional_ideal(1):
+            if ideal.is_principal():
+                return tuple((ideal.gens_reduced()[0], 0))
+            else:
+                return ideal.gens_reduced()
+        elif ideal.is_principal():
+            a = ideal.gens_reduced()[0]
+            return tuple((a, 0))
+        else:
+            a = ideal.gens_reduced()[0]
+            # new = K.fractional_ideal(a)
+            temp = lattice_ideal * ideal
+            if temp.is_principal():
+                b = temp.gens_reduced()[0]
+                return tuple((a, b))
+            else:
+                possible = list_of_representatives(ideal)
+                for inverse in possible:
+                    if (temp * inverse).is_principal():
+                        b = temp * inverse
+                return tuple((a, b.gens_reduced()[0]))
+
+
+def ideal_wrt_lattice_ideal(lattice_ideal, x: tuple):
+    """
+        Return the ideal  in the sense, ideal = a*OK + b*(lattice_ideal.inverse())
+
+        EXAMPLES::
+            sage: sage: from hilbert_modgroup.all import ideal_wrt_lattice_ideal
+            sage: x = polygen(ZZ, 'x')
+            sage: K.<a> = NumberField(x^2 - 5)
+            sage: lattice_ideal=K.different()
+            sage: ideal = K.fractional_ideal(3)
+            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
+            (3, 0)
+            sage: ideal_wrt_lattice_ideal(lattice_ideal, gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)) == ideal
+            True
+
+            sage: K1 = NumberField(x**4 - 17*x**2 + 36,names='a')
+            sage: a=K1.gen()
+            sage: lattice_ideal = K1.different()
+            sage: ideal = K1.fractional_ideal(2, a)
+            sage: gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)
+            (2, 7/6*a^3 + 6*a^2 + 13/6*a - 51)
+            sage: ideal_wrt_lattice_ideal(lattice_ideal, gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)) == ideal
+            True
+    """
+    K = lattice_ideal.number_field()
+    if x[1] == 0:
+        return K.OK().fractional_ideal(x[0])
+    else:
+        return x[0] * K.OK().fractional_ideal(1) + x[1] * (lattice_ideal.inverse())
+
+
 def sign_matrix_real_field(K):
     """
     Compute the sign matrix of a totally real number field K.
@@ -719,7 +701,7 @@ def sign_matrix_real_field(K):
     return Matrix(ZZ, data)
 
 
-def totally_positive_unit_group_generators(K, str: ['gen', 'vgen'] = 'gen'):
+def totally_positive_unit_group_generators(K, gen_form='gen'):
     Uk = K.unit_group()
     ulist = Uk.gens_values()
     n = len(ulist)
@@ -736,156 +718,33 @@ def totally_positive_unit_group_generators(K, str: ['gen', 'vgen'] = 'gen'):
     U = V.subspace(svectors)
     # Get a basis of that subspace
     B = U.basis()
-    gens = []
-    check = []
+    gen = []
+    vgen = []
     for v in B:
         temp = []
         s = 1
         for i in range(0, n):
             temp.append((ulist[i], v[i]))
-            s = s*ulist[i]**v[i]
-        gens.append(temp)
-        check.append(s)
+            s = s * ulist[i] ** v[i]
+        vgen.append(temp)
+        gen.append(s)
     for i in range(1, n):
-        if all(ulist[i]**2 != g**2 for g in check):
-            gens.append([(ulist[i], 2)])
-            check.append(ulist[i]**2)
-    if str == 'gen':
-        return  check
+        if all(ulist[i] ** 2 != g ** 2 for g in gen):
+            vgen.append([(ulist[i], 2)])
+            gen.append(ulist[i] ** 2)
+    if gen_form == 'gen':
+        return gen
     else:
-        return gens
+        return vgen
 
 
-
-def number_of_Gamma0_NFCusps_wrt_lattice_ideal(N, gens):
-    k = N.number_field()
-    # The number of Gamma0(N)-sub-orbits for each Gamma-orbit:
-    from sage.arith.misc import divisors
-    # Ugens = [k(u) for u in totally_positive_unit_group_generators(k)]
-    s = sum([len((d + N / d).invertible_residues_mod(gens))
-             for d in divisors(N)])
-    # There are h Gamma-orbits, with h class number of underlying number field.
-    return s * k.class_number()
-
-
-def units_mod_ideal_wrt_lattice_ideal(I):
-    k = I.number_field()
+def units_mod_ideal(I, tp_units=True):
+    K = I.number_field()
     Istar = I.idealstar(2)
-    ulist = totally_positive_unit_group_generators(k, 'gen')
+    if tp_units:
+        ulist = totally_positive_unit_group_generators(K)
+    else:
+        ulist = [K(u**2) for u in K.unit_group().gens_values()]
     elist = [Istar(I.ideallog(u)).order() for u in ulist]
-
     from sage.misc.mrange import xmrange
-    return [k.prod(u ** e for u, e in zip(ulist, ei)) for ei in xmrange(elist)]
-
-
-def NFCusps_ideal_reps_for_levelN(N, nlists=1):  # We assume that lattice_ideal is coprime to N
-    k = N.number_field()
-    G = k.class_group()
-    L = [[k.ideal(1)] for _ in range(nlists)]
-    it = k.primes_of_degree_one_iter()
-    for I in G.list():
-        check = 0
-        if not I.is_principal():
-            Iinv = I.ideal() ** (-1)
-            while check < nlists:
-                J = next(it)
-                if (J * Iinv).is_principal() and J.is_coprime(N):
-                    L[check].append(J)
-                    check += 1
-    return [tuple(l) for l in L]
-
-
-def Gamma0_NFCusps_wrt_lattice_ideal(N, lattice_ideal, gens):
-    # We create L a list of three lists, which are different and each a list of
-    # prime ideals, coprime to N, representing the ideal classes of k
-    L = NFCusps_ideal_reps_for_levelN(N, nlists=3)
-    Laux = L[1] + L[2]
-    Lreps = list_of_representatives(lattice_ideal * N)
-    Lcusps = []
-
-    k = N.number_field()
-
-    for A in L[0]:
-        A = A
-        # find B in inverse class:
-        if A.is_trivial():
-            B = k.ideal(1)
-            # B = k.unit_ideal() produces an error because we need fract ideal
-            g = 1
-        else:
-            Lbs = [P for P in Laux if (P * A).is_principal()]
-            B = Lbs[0]
-            g = (A * B).gens_reduced()[0]
-
-        # for every divisor of N we have to find cusps
-        from sage.arith.misc import divisors
-        for d in divisors(N):
-            # find delta prime coprime to B in inverse class of d*A
-            # by searching in our list of auxiliary prime ideals
-            Lds = [P for P in Laux if (P * lattice_ideal * d * A).is_principal() and P.is_coprime(B)]
-            deltap = Lds[0]
-            a = (deltap * lattice_ideal * d * A).gens_reduced()[0]
-            I = d + N / d
-            # special case: A=B=d=<1>:
-            if a.is_one() and I.is_trivial():
-                Lcusps.append(NFCusp_wrt_lattice_ideal(lattice_ideal, 0, 1, lreps=Lreps))
-            else:
-                # u = totally_positive_unit_group_generators(k)
-                for b in I.invertible_residues_mod(gens):
-                    # Note: if I trivial, invertible_residues_mod returns [1]
-                    # lift b to (R/a)star
-                    # we need the part of d which is coprime to I, call it M
-                    M = d.prime_to_idealM_part(I)
-                    deltAM = deltap * lattice_ideal * A * M
-                    u = (B * deltAM).element_1_mod(I)
-                    v = (I * B).element_1_mod(deltAM)
-                    newb = u * b + v
-                    # build AB-matrix:
-                    # ----> extended gcd for k.ideal(a), k.ideal(newb)
-                    A1 = a * (lattice_ideal.inverse()) * (A.inverse())
-                    A2 = newb * B.inverse()
-                    r = A2.element_1_mod(A1)
-                    a1 = (r / newb) * g
-                    b1 = -(1 - r) / a * g
-                    # if xa + yb = 1, cusp = y*g /a
-                    ABM = [a1, b1, a, newb]
-                    Lcusps.append(NFCusp_wrt_lattice_ideal(lattice_ideal, a1, a, lreps=Lreps))
-    return Lcusps
-
-
-def coset_matrices(N, lattice_ideal):
-    k = N.number_field()
-    # L = [MSymbol(N, k(0), k(1), check=False)]
-    # N.residues() = iterator through the residues mod N
-    # L = L + [MSymbol(N, k(1), r, check=False) for r in N.residues()]
-    L = []
-    from sage.arith.misc import divisors
-    for D in divisors(N):
-        if (D * lattice_ideal).is_principal():
-            Dp = k.ideal(1)
-            c = (D * lattice_ideal * Dp).gens_reduced()[0]
-        else:
-            it = k.primes_of_degree_one_iter()
-            Dp = next(it)
-            while not Dp.is_coprime(N) or not (Dp * D * lattice_ideal).is_principal():
-                Dp = next(it)
-            c = (D * lattice_ideal * Dp).gens_reduced()[0]
-        I = D + N / D
-        for r in (N / D).residues():
-            if I.is_coprime(r):
-                M = D.prime_to_idealM_part(N / D)
-                u = (Dp * M).element_1_mod(N / D)
-                d = u * r + (1 - u)  # Our M-symbol is (c: d)
-                # print( r, u, c, d)
-                if c - 1 in N:
-                    L.append(Matrix(k, 2, 2, [k(0), k(-1), 1, d]))
-                elif d - 1 in N:
-                    L.append(Matrix(k, 2, 2, [k(1), k(0), c, 1]))
-                elif d.is_zero():
-                    L.append(Matrix(k, 2, 2, [1, -1 / c, c, d]))
-                else:
-                    B = k.ideal(c * lattice_ideal.inverse()).element_1_mod(k.ideal(d))
-                    b = -B / c
-                    a = (1 - B) / d
-                    L.append(Matrix(k, 2, 2, [a, b, c, d]))
-    return L
+    return [K.prod(u ** e for u, e in zip(ulist, ei)) for ei in xmrange(elist)]
