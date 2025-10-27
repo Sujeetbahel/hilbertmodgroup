@@ -460,7 +460,7 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
                     else:
                         u = K.unit_group().gens_values()
                         gens = [t**2 for t in u]
-                    for b in invertible_residues_mod_refined(I, gens):
+                    for b in I.invertible_residues_mod(gens):
                         # Note: if I trivial, invertible_residues_mod returns [1]
                         # lift b to (R/a)star
                         # we need the part of d which is coprime to I, call it M
@@ -533,32 +533,3 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         if not len(L) == psi(N):
             raise ValueError("Condition is not satisfying. Check again")
         return L
-
-
-def invertible_residues_mod_refined(I, subgp_gens = None, reduce = True):
-    if subgp_gens is None:
-        subgp_gens = []
-    if I.norm() == 1:
-        return xmrange_iter([[1]], lambda l: l[0])
-    G = I.idealstar(2)
-    invs = G.invariants()
-    g = G.gens_values()
-    n = G.ngens()
-    if n == 0:
-        return xmrange_iter([[1]], lambda l: l[0])
-    else:
-        from sage.matrix.constructor import Matrix
-        from sage.matrix.special import diagonal_matrix
-        M = diagonal_matrix(ZZ, invs)
-        if subgp_gens:
-            Units = Matrix(ZZ, [I.ideallog(_) for _ in subgp_gens])
-            M = M.stack(Units)
-        A, U, V = M.smith_form()
-        V = V.inverse()
-        new_basis = [prod([g[j]**(V[i, j] % invs[j]) for j in range(n)]) for i in range(n)]
-        if reduce:
-            combo = lambda c: I.small_residue(prod(new_basis[i] ** c[i] for i in range(n)))
-        else:
-            combo = lambda c: prod(new_basis[i] ** c[i] for i in range(n))
-        coord_ranges = [list(range(A[i, i])) for i in range(n)]
-        return xmrange_iter(coord_ranges, combo)
