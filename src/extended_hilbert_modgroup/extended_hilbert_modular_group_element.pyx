@@ -23,22 +23,26 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
 
         EXAMPLES::
 
-            sage: from hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: from hilbert_modgroup.all import ExtendedHilbertModularGroupElement
-            sage: H=ExtendedHilbertModularGroup(5)
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroupElement
+            sage: K2.<a> = QuadraticField(5)
+            sage: H = ExtendedHilbertModularGroup(K2)
             sage: TestSuite(H).run()
-            sage: x,y=H.OK().gens()
-            sage: ExtendedHilbertModularGroupElement(H,[1,x,0,1])
+            sage: x, y = H.OK().gens()
+            sage: ExtendedHilbertModularGroupElement(H, [1, x, 0, 1])
             [          1 1/2*a + 1/2]
             [          0           1]
             sage: ExtendedHilbertModularGroupElement(H,[1,x,0,1]) in H
             True
-            sage: K.<a> = QuadraticField(3)
-            sage: lattice_ideal = K.different()
-            sage: f = K.unit_group().fundamental_units()[0]
-            sage: H=ExtendedHilbertModularGroup(lattice_ideal)
-            sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, 0, f]);A
-            matrix must have determinant equal to  totally positive unit
+            sage: K3.<a> = QuadraticField(3)
+            sage: lattice_ideal = K3.different()
+            sage: f = K3.unit_group().fundamental_units()[0]
+            sage: H = ExtendedHilbertModularGroup(K3, tp_units = False)
+            sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, 0, f]); A
+            TypeError: matrix testing must have determinant 1
+            sage: H = ExtendedHilbertModularGroup(K3, tp_units = True)
+            sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, 0, f]); A
+            TypeError: matrix must have determinant equal to totally positive unit
         """
         #print(" in init withx=",parent,x)
         if not 'ExtendedHilbertModularGroup_class' in parent.__class__.__name__:
@@ -48,7 +52,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             if not (x.determinant().is_unit() and x.determinant().is_totally_positive()):
                 raise TypeError("matrix must have determinant equal to totally positive unit")
         else:
-            if not (x.determinant == 1):
+            if not (x.determinant() == 1):
                 raise TypeError("matrix testing must have determinant 1")
         if not x[0, 1] in parent.lattice_ideal().inverse():
             raise TypeError("matrix must have M[0, 1] entry in lattice_ideal.inverse()")
@@ -170,7 +174,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             sage: K = QuadraticField(5)
             sage: lattice_ideal = K.different()
             sage: H = ExtendedHilbertModularGroup(lattice_ideal)
-            sage: x,y=(lattice_ideal**-1).gens()
+            sage: x,y = (lattice_ideal**-1).gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, y, 0, 1])
             sage: A.b()
             1/10*a + 1/2
@@ -187,7 +191,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             sage: K = QuadraticField(5)
             sage: lattice_ideal = K.different()
             sage: H = ExtendedHilbertModularGroup(lattice_ideal)
-            sage: x,y=(lattice_ideal**-1).gens()
+            sage: x,y = (lattice_ideal**-1).gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, y, 0, 1])
             sage: A.c()
             0

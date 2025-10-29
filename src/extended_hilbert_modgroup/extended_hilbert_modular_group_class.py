@@ -1,8 +1,6 @@
 import sage
 from sage.categories.groups import Groups
 from sage.groups.matrix_gps.linear import LinearMatrixGroup_generic
-from sage.misc.misc_c import prod
-from sage.misc.mrange import xmrange_iter
 from sage.rings.infinity import infinity
 from sage.rings.number_field.number_field import QuadraticField
 from sage.all import latex, Integer
@@ -10,7 +8,6 @@ from sage.misc.cachefunc import cached_method
 from sage.arith.misc import divisors
 from sage.modular.cusps_nf import list_of_representatives, NFCusps_ideal_reps_for_levelN
 from sage.modular.modsym.p1list_nf import psi
-from sage.rings.number_field.number_field_ideal import ZZ
 from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import NFCusp_wrt_lattice_ideal
 from extended_hilbert_modgroup.extended_hilbert_modular_group_element import ExtendedHilbertModularGroupElement
 from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import totally_positive_unit_group_generators
@@ -33,15 +30,17 @@ def is_ExtendedHilbertModularGroup(x) -> bool:
 
     EXAMPLES::
 
-        sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup, is_ExtendedHilbertModularGroup
+        sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+        sage: from extended_hilbert_modgroup.all import is_ExtendedHilbertModularGroup
         sage: is_ExtendedHilbertModularGroup(1)
         False
         sage: H = ExtendedHilbertModularGroup(5)
         sage: is_ExtendedHilbertModularGroup(H)
         True
-        sage: K = QuadraticField(3)
-        sage: lattice_ideal = K.OK().fractional_ideal(2)
-        sage: H = ExtendedHilbertModularGroup(lattice_ideal)
+        sage: K3.<a> = QuadraticField(3)
+        sage: lattice_ideal = K3.fractional_ideal(5)
+        sage: level_ideal = K3.fractional_ideal(7)
+        sage: H = ExtendedHilbertModularGroup(K3, lattice_ideal, level_ideal)
         sage: is_ExtendedHilbertModularGroup(H)
         True
     """
@@ -50,8 +49,9 @@ def is_ExtendedHilbertModularGroup(x) -> bool:
 
 def ExtendedHilbertModularGroup(number_field, lattice_ideal=None, level_ideal=None, tp_units = True):
     r"""
-    Create the Extended Hilbert modular group PGL_2^+(Fractional_ideal(1) \oplus lattice_ideal, level_ideal) (or PSL_2(Fractional_ideal(1) \oplus lattice_ideal, level_ideal)),
-    of order 2, consisting of matrices of determinant in U_K^+ (or 1).
+    Create the Extended Hilbert modular group PGL_2^+(Fractional_ideal(1) \oplus lattice_ideal, level_ideal)
+    (or PSL_2(Fractional_ideal(1) \oplus lattice_ideal, level_ideal)), of order 2, consisting of matrices of
+    determinant in U_K^+ (or 1).
 
     INPUT:
 
@@ -64,11 +64,24 @@ def ExtendedHilbertModularGroup(number_field, lattice_ideal=None, level_ideal=No
         sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
         sage: number_field = 5
         sage: ExtendedHilbertModularGroup(number_field)
-        Extended Hilbert modular group PSL_2(OK +  lattice_ideal, level_ideal) of order 2 over Number Field in a with defining polynomial x^2 - 5
-        with a = 2.236067977499790? consisting of matrices of determinant 1.
-        sage: ExtendedHilbertModularGroup(lattice_ideal)
-        Extended Hilbert modular group PSL_2(OK + lattice_ideal) of order 2 over Number Field in a with defining polynomial x^2 - 5 with
-        a = 2.236067977499790? consisting of matrices of determinant 1.
+        Hilbert modular group PGL_2^+(Fractional ideal (1) + Fractional ideal (1), Fractional ideal (1)) of order
+        2 over Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? consisting of
+        matrices of determinant in U_K^+.
+        sage: K1.<a> = QuadraticField(2)
+        sage: lattice_ideal = K1.fractional_ideal(3)
+        sage: ExtendedHilbertModularGroup(K1, lattice_ideal)
+        Hilbert modular group PGL_2^+(Fractional ideal (1) + Fractional ideal (3), Fractional ideal (1)) of
+        order 2 over Number Field in a with defining polynomial x^2 - 2 with a = 1.414213562373095? consisting
+        of matrices of determinant in U_K^+.
+        sage: level_ideal = K1.fractional_ideal(5)
+        sage: ExtendedHilbertModularGroup(K1, lattice_ideal, level_ideal)
+        Hilbert modular group PGL_2^+(Fractional ideal (1) + Fractional ideal (3), Fractional ideal (5)) of
+        order 2 over Number Field in a with defining polynomial x^2 - 2 with a = 1.414213562373095? consisting
+        of matrices of determinant in U_K^+.
+        sage: ExtendedHilbertModularGroup(K1, lattice_ideal, level_ideal, tp_units = False)
+        Extended Hilbert modular group PSL_2(Fractional ideal (1) +  lattice_ideal, level_ideal) of order 2 over
+        Number Field in a with defining polynomial x^2 - 2 with a = 1.414213562373095? consisting of matrices
+        of determinant 1.
 
     """
     if isinstance(number_field, (int, Integer)):
@@ -116,18 +129,27 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         - ``latex_string`` - string
 
         EXAMPLES::
-            sage: from extended_hilbert_modgroup.extended_hilbert_modular_group_class import *
-            sage: number_field = QuadraticField(5)
-            sage: lattice_ideal = number_field.different()
+            sage: from extended_hilbert_modgroup.extended_hilbert_modular_group_class import ExtendedHilbertModularGroup_class
+            sage: K = QuadraticField(5)
+            sage: lattice_ideal = K.different()
+            sage: level_ideal = K.fractional_ideal(3)
             sage: ltx = 'PGL2^+[OK + lattice_ideal]'.format(2, latex(number_field))
-            sage: name = f"Extended Hilbert modular group of order 2 (over {number_field}) of the forms PGL2^+[OK+I], where I is {lattice_ideal}"
-            sage: ExtendedHilbertModularGroup_class(lattice_ideal = lattice_ideal, sage_name = name, latex_string = ltx)
-            Extended Hilbert modular group of order 2 (over Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790?) of the forms P[OK+I], where I is Fractional ideal (-a)
-            sage: H1=ExtendedHilbertModularGroup(5) #To do
-            sage: TestSuite(H1).run()   #To do
-            sage: H1(1)         #To do
-            sage: H1([1,1,0,1]) #To do
-            sage: H1([1,H1.lattice_ideal().gens()[0],0,1])  #To do
+            sage: name = f"Extended Hilbert modular group PGL_2(OK + lattice_ideal, level_ideal) over {K}"
+            sage: ExtendedHilbertModularGroup_class(number_field =  K, lattice_ideal = lattice_ideal, level_ideal = level_ideal, tp_units= True,
+            ....: sage_name = name, latex_string = ltx)
+            Extended Hilbert modular group PGL_2(OK + lattice_ideal, level_ideal) over Number Field in a with
+            defining polynomial x^2 - 5 with a = 2.236067977499790?
+            sage: H1 = ExtendedHilbertModularGroup(5)
+            sage: TestSuite(H1).run()
+            sage: H1(1)
+            [1 0]
+            [0 1]
+            sage: H1([1, 1, 0, 1])
+            [1 1]
+            [0 1]
+            sage: H1([1, H1.OK().gens()[0], 0, 1])
+            [          1 1/2*a + 1/2]
+            [          0           1]
 
         """
         self._number_field = number_field
@@ -155,7 +177,8 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: H = ExtendedHilbertModularGroup(5)
+            sage: K = QuadraticField(5)
+            sage: H = ExtendedHilbertModularGroup(K)
             sage: H.number_field()
             Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790?
         """
@@ -175,9 +198,38 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         return self._lattice_ideal
 
     def level_ideal(self):
+        """
+        Return the level_ideal associated to self.
+
+        EXAMPLES::
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: K = QuadraticField(3)
+            sage: H = ExtendedHilbertModularGroup(K)
+            sage: H.level_ideal()
+            Fractional ideal (1)
+            sage: level_ideal = K.fractional_ideal(7)
+            sage: H = ExtendedHilbertModularGroup(K, level_ideal = level_ideal)
+            sage: H.level_ideal()
+            Fractional ideal (7)
+
+        """
         return self._level_ideal
 
     def tp_units(self):
+        """
+        Return the tp_units value associated to self.
+
+        EXAMPLES::
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: K = QuadraticField(3)
+            sage: H = ExtendedHilbertModularGroup(K)
+            sage: H.tp_units()
+            True
+            sage: tp_units = False
+            sage: H = ExtendedHilbertModularGroup(K, tp_units = False)
+            sage: H.tp_units()
+            False
+        """
         return self._tp_units
 
     def OK(self):
@@ -195,28 +247,45 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         r"""
         Return a list of generators of ``self``.
 
-        INPUT:
-
-        - ``algorithm`` (string) either 'standard' or 'elementary'.
-
-        If 'elementary' is given, return a set of generators
-        consisting of elementary (i.e., upper- and lower-triangular) matrices.
-        Otherwise, return a set of reflections and translations.
-
         EXAMPLES::
 
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: H = ExtendedHilbertModularGroup(3)
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+            sage: K1.<a> = QuadraticField(2)
+            sage: H = ExtendedHilbertModularGroup(K1)
             sage: H.generators()
             [
-             [1 0]  [-a + 2      0]  [ 0 -1]  [1 1]  [1 a]
-             [0 1], [     0      1], [ 1  0], [0 1], [0 1]
+            [1 1]  [1 a]  [1 0]  [1 0]  [2*a + 3       0]
+            [0 1], [0 1], [1 1], [a 1], [      0       1]
             ]
-
-            sage: H.generators(algorithm ='elementary')
+            sage: lattice_ideal = K1.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K1, lattice_ideal)
+            sage: H.generators()
             [
-             [1 0]  [-a + 2      0]  [1 0]  [1 0]  [1 1]  [1 a]
-             [0 1], [     0      1], [1 1], [a 1], [0 1], [0 1]
+            [  1 1/3]  [    1 1/3*a]  [1 0]  [  1   0]  [2*a + 3       0]
+            [  0   1], [    0     1], [3 1], [3*a   1], [      0       1]
+            ]
+            sage: lattice_ideal = K1.fractional_ideal(1)
+            sage: level_ideal = K1.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K1, lattice_ideal, level_ideal)
+            sage: H.generators()
+            [
+            [-a + 1      0]  [-1  0]  [a + 1     0]  [ a -1]  [-a -1]
+            [     3 -a - 1], [ 3 -1], [    3 a - 1], [ 3 -a], [ 3  a],
+
+            [-a - 1      0]  [a - 1     0]  [1 1]  [1 a]  [1 0]  [  1   0]
+            [     3 -a + 1], [    3 a + 1], [0 1], [0 1], [3 1], [3*a   1],
+
+            [2*a + 3       0]
+            [      0       1]
+            ]
+            sage: H = ExtendedHilbertModularGroup(K1, lattice_ideal, level_ideal, tp_units = False)
+            sage: H.generators()
+            [
+            [-a + 1      0]  [-1  0]  [a + 1     0]  [ a -1]  [-a -1]
+            [     3 -a - 1], [ 3 -1], [    3 a - 1], [ 3 -a], [ 3  a],
+
+            [-a - 1      0]  [a - 1     0]  [1 1]  [1 a]  [1 0]  [  1   0]
+            [     3 -a + 1], [    3 a + 1], [0 1], [0 1], [3 1], [3*a   1]
             ]
 
         """
@@ -257,11 +326,10 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
 
         EXAMPLES::
 
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: ExtendedHilbertModularGroup(5).S()
-            [ 0 -1]
-            [ 1  0]
-            sage: ExtendedHilbertModularGroup(10).S()
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+            sage: K1.<a> = QuadraticField(2)
+            sage: H = ExtendedHilbertModularGroup(K1)
+            sage: H.S()
             [ 0 -1]
             [ 1  0]
         """
@@ -278,12 +346,13 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
 
         EXAMPLES::
 
-            sage: from hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: H = ExtendedHilbertModularGroup(5)
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+            sage: K2.<a> = QuadraticField(5)
+            sage: H = ExtendedHilbertModularGroup(K2)
             sage: H.T()
             [1 1]
             [0 1]
-            sage: u0,u1=H.number_field().unit_group().gens()
+            sage: u0, u1 = K2.unit_group().gens()
             sage: H.T(u0)
             [ 1 -1]
             [ 0  1]
@@ -350,49 +419,19 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
 
         INPUT:
 
-        - [a, b, c, d]` -- matrix entries.
+        - a, b, c, d -- matrix entries.
 
 
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
             sage: H = ExtendedHilbertModularGroup(5)
-            sage: A = H.create_element([1, 0, 1, 0])
+            sage: A = H.create_element(1, 1, 0, 1)
             sage: A in H
             True
         """
         return self([a, b, c, d])
 
-    def ngens(self):
-        r"""
-        Return the number of generators of self as given by the function 'gens'.
-
-        INPUT:
-
-        - ``algorithm`` -- string (default='standard') give the algorithm to compute the generators
-
-        EXAMPLES::
-
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: ExtendedHilbertModularGroup(5).ngens()
-            5
-
-        """
-        return len(self.generators())
-
-    def gen(self, i):
-        r"""
-        Return the i-th generator of self, i.e. the i-th element of the
-        tuple self.gens().
-
-        EXAMPLES::
-
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: ExtendedHilbertModularGroup(5).gen(1)
-            [-1/2*a + 3/2            0]
-            [           0            1]
-        """
-        return self.generators()[i]
 
     def random_element(self, *args, **kwds):
         r"""
@@ -421,12 +460,22 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
     @cached_method
     def cusps(self):
         """
-        N - level_ideal
-        lattice_ideal - lattice_ideal
-        gens - generators of unit we want to find modulo the cusp
+        Return the inequivalent cusps of self.
+
+        sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+        sage: K2.<a> = QuadraticField(5)
+        sage: lattice_ideal = K2.fractional_ideal(1)
+        sage: level_ideal = K2.fractional_ideal(3)
+        sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
+        sage: H.cusps()
+        [Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal,
+         Cusp [1: 3] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal]
+        sage: lattice_ideal = K2.fractional_ideal(7)
+        sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
+        sage: H.cusps()
+        [Cusp [0: 7] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal,
+         Cusp [1: 21] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal]
         """
-        # We create L a list of three lists, which are different and each a list of
-        # prime ideals, coprime to N, representing the ideal classes of
         K = self.number_field()
         lattice_ideal = self.lattice_ideal()
         N = self.level_ideal()
@@ -461,9 +510,6 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
                         u = K.unit_group().gens_values()
                         gens = [t**2 for t in u]
                     for b in I.invertible_residues_mod(gens):
-                        # Note: if I trivial, invertible_residues_mod returns [1]
-                        # lift b to (R/a)star
-                        # we need the part of d which is coprime to I, call it M
                         M = d.prime_to_idealM_part(I)
                         deltAM = deltap * lattice_ideal * A * M
                         u = (B * deltAM).element_1_mod(I)
@@ -483,6 +529,24 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         return self._cusps
 
     def ncusps(self):
+        """
+        Return the number of cusp associated to self.
+
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+            sage: K2.<a> = QuadraticField(5)
+            sage: H = ExtendedHilbertModularGroup(K2)
+            sage: H.ncusps()
+            1
+            sage: level_ideal = K6.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K2, level_ideal = level_ideal)
+            sage: H.ncusps()
+            4
+            sage: K2.<a> = QuadraticField(5)
+            sage: lattice_ideal = K2.fractional_ideal(1)
+            sage: level_ideal = K2.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K2, level_ideal = level_ideal)
+            sage: H.ncusps()
+        """
         K = self.number_field()
         N = self.level_ideal()
         if self.tp_units():
@@ -497,7 +561,36 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
     @cached_method
     def coset_matrices(self):
         """
-        Return the list of right cosets representatives of of GL_2^+(OK oplus ida, idn) in GL_2(OK oplus ida).
+        Return the list of right cosets representatives of GL_2^+(OK oplus ida, idn) in GL_2(OK oplus ida).
+
+            sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
+            sage: K2.<a> = QuadraticField(5)
+            sage: lattice_ideal = K2.fractional_ideal(1)
+            sage: level_ideal = K2.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
+            sage: H.coset_matrices()
+            [
+            [           0           -1]  [-1/2*a + 1/2            0]
+            [           1 -3/2*a - 1/2], [           1 -1/2*a - 1/2],
+
+            [1/2*a + 1/2           0]  [ 0 -1]  [ 1 -1]  [ 0 -1]
+            [          1 1/2*a - 1/2], [ 1 -a], [ 1  0], [ 1  a],
+
+            [-1/2*a - 1/2            0]  [1/2*a - 1/2           0]
+            [           1 -1/2*a + 1/2], [          1 1/2*a + 1/2],
+
+            [          0          -1]  [1 0]
+            [          1 3/2*a + 1/2], [3 1]
+            ]
+            sage: from sage.modular.modsym.p1list_nf import psi
+            sage: psi(level_ideal)
+            10
+            sage: len(H.coset_matrices())
+            10
+            sage: level_ideal = K2.fractional_ideal(7)
+            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
+            sage: len(H.coset_matrices()) == psi(level_ideal)
+            True
         """
         N = self.level_ideal()
         K = self.number_field()
