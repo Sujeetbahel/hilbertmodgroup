@@ -47,7 +47,7 @@ def is_ExtendedHilbertModularGroup(x) -> bool:
     return isinstance(x, ExtendedHilbertModularGroup_class)
 
 
-def ExtendedHilbertModularGroup(number_field, lattice_ideal=None, level_ideal=None, tp_units = True):
+def ExtendedHilbertModularGroup(number_field, lattice_ideal = None, level_ideal = None, tp_units = True):
     r"""
     Create the Extended Hilbert modular group PGL_2^+(Fractional_ideal(1) \oplus lattice_ideal, level_ideal)
     (or PSL_2(Fractional_ideal(1) \oplus lattice_ideal, level_ideal)), of order 2, consisting of matrices of
@@ -55,6 +55,7 @@ def ExtendedHilbertModularGroup(number_field, lattice_ideal=None, level_ideal=No
 
     INPUT:
 
+    - ``number_field`` (NumberField)       -- a totally real field.
     - ``lattice_ideal`` (NumberFieldIdeal)  -- an ideal in totally real field.
     - ``level_ideal`` (NumberFieldIdeal)    -- an ideal in the same field.
     - ``tp_units `` (bool)  - ``True`` if you want the determinant in U_K^+ and ``False`` if 1.
