@@ -480,11 +480,11 @@ class NFCusp_wrt_lattice_ideal(Element):
             else:
                 return [1, 0, 0, 1]
         if not self:
-            gens = gens_reduced_wrt_lattice_ideal(self.lattice_ideal(), self.lattice_ideal() * G)[1]
+            #gens = gens_reduced_wrt_lattice_ideal(self.lattice_ideal(), self.lattice_ideal() * G)[1]
             if return_H:
                 return [self.__a, -1 /self.__b, self.__b, 0], H
             else:
-                return [self.__a, -1 / self.__b, self.__, 0]
+                return [self.__a, -1 / self.__b, self.__b, 0]
         Ginv = G ** (-1)
         A1 = a1 * Ginv
         A2 = a2 * (self.lattice_ideal().inverse()) * Ginv

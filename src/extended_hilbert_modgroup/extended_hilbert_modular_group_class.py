@@ -1,6 +1,7 @@
 import sage
 from sage.categories.groups import Groups
 from sage.groups.matrix_gps.linear import LinearMatrixGroup_generic
+from sage.matrix.constructor import Matrix, matrix
 from sage.rings.infinity import infinity
 from sage.rings.number_field.number_field import QuadraticField
 from sage.all import latex, Integer
@@ -12,6 +13,9 @@ from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import NFCusp_wrt_latti
 from extended_hilbert_modgroup.extended_hilbert_modular_group_element import ExtendedHilbertModularGroupElement
 from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import totally_positive_unit_group_generators
 import logging
+
+from hilbert_modgroup.upper_half_plane import ComplexPlaneProductElement__class
+
 logger = logging.getLogger(__name__)
 logger.setLevel(int(10))
 
@@ -161,9 +165,9 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         # Instance data related to cusps
         self._ncusps = None
         self._cusps = []
-        # self._ideal_cusp_representatives = []
-        # self._cusp_normalizing_maps = {}
-        # self._cusp_normalizing_maps_inverse = {}
+        self._ideal_cusp_representatives = []
+        self._cusp_normalizing_maps = {}
+        self._cusp_normalizing_maps_inverse = {}
         super(ExtendedHilbertModularGroup_class, self).__init__(degree = Integer(2), base_ring=number_field,
                                                                 special = False,
                                                                 sage_name = sage_name,
@@ -627,3 +631,203 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         if not len(L) == psi(N):
             raise ValueError("Condition is not satisfying. Check again")
         return L
+
+    def ideal_cusp_representatives(self):
+        r"""
+        Return a list of ideals corresponding to cusp representatives, i.e.
+        ideal representatives of ideal classes.
+
+        Note: We choose an ideal of smallest norm in each class.
+            If the ideal given by sage is already minimal we return this.
+
+        EXAMPLES::
+
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: K2.<a> = QuadraticField(5)
+            sage: lattice_ideal = K2.different()
+            sage: level_ideal = K2.fractional_ideal(7)
+            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
+            sage: H.ideal_cusp_representatives()
+            [Fractional ideal (1)]
+            sage: K6.<a> = QuadraticField(10)
+            sage: lattice_ideal = K6.different()
+            sage: level_ideal = K6.fractional_ideal(7)
+            sage: H = ExtendedHilbertModularGroup(K6, lattice_ideal, level_ideal)
+            sage: H.ideal_cusp_representatives()
+            [Fractional ideal (1), Fractional ideal (2, a)]
+
+
+        """
+        if not self._ideal_cusp_representatives:
+            self._ideal_cusp_representatives = []
+
+            def _find_equivalent_ideal_of_minimal_norm(c):
+                for a in self.number_field().ideals_of_bdd_norm(c.norm() - 1).items():
+                    for ideala in a[1]:
+                        if (ideala * c ** -1).is_principal():
+                            if c.norm() <= ideala.norm():
+                                return c
+                            return ideala
+                return c
+
+            for ideal_class in self.OK().class_group():
+                c = ideal_class.ideal().reduce_equiv()
+                # NOTE: Even though we use 'reduce_equiv' we are not guaranteed a representative
+                #       with minimal **norm**
+                #       To make certain we choose a representative of minimal norm explicitly.
+                c = _find_equivalent_ideal_of_minimal_norm(c)
+                self._ideal_cusp_representatives.append(c)
+            # We finally sort all representatives according to norm.
+            self._ideal_cusp_representatives.sort(key=lambda x: x.norm())
+        return self._ideal_cusp_representatives
+
+    def cusp_representative(self, cusp, return_map = False):
+        r"""
+        Return a representative cusp and optionally a corresponding map.
+
+        INPUT:
+        - ``cusp`` -- cusp
+        - ``return_map`` -- bool (default: False)
+            Set to True to also return the map giving the equivalence.
+
+        EXAMPLES::
+
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: K6.<a> = QuadraticField(10)
+            sage: lattice_ideal = K6.different()
+            sage: level_ideal = K6.fractional_ideal(7)
+            sage: H = ExtendedHilbertModularGroup(K6, lattice_ideal, level_ideal)
+            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_lattice_ideal
+            sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, 0, 1)
+            sage: H.cusp_representative(c)
+            Cusp [0: -2*a] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
+            sage: a = H.number_field().gen()
+            sage: a = H.number_field().gen()
+            sage: x, y = 3*a - 10, a-4
+            sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, x, y)
+            sage: H.cusp_representative(c)
+            Cusp [2*a + 1: 14*a - 80] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
+            sage: K2.<a> = QuadraticField(5)
+            sage: lattice_ideal = K2.fractional_ideal(2)
+            sage: level_ideal = K2.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal, False)
+            sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, 2, a)
+            sage: H.cusp_representative(c)
+            Cusp [0: 2] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal
+
+        """
+        for c in self.cusps():
+            if return_map:
+                t, B = cusp.is_Gamma0_wrt_lattice_ideal_equivalent(c, self.level_ideal(), Transformation = True)
+                if t:
+                    return c, self(B)
+            else:
+                t = cusp.is_Gamma0_wrt_lattice_ideal_equivalent(c, self.level_ideal())
+                if t:
+                    return c
+        raise ArithmeticError(f"Could not find cusp representative for {cusp}")
+
+    def cusp_normalizing_map(self, cusp, inverse=False, check=False):
+        r"""
+        Given a cusp (a:c) Return a matrix A = [[ a ,b ], [c , d]] in SL(2,K) such that
+        A(Infinity)=(a:c).
+
+        INPUT:
+        - ``cusp`` -- Instance of NFCusp
+        - ``inverse`` -- bool (default: False) set to True to return the inverse map
+        - ``check`` -- bool (default: False) set to True to check the result
+
+        If inverse = True then return A^-1
+
+        EXAMPLES::
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: K3.<a> = QuadraticField(3)
+            sage: lattice_ideal = K3.different()
+            sage: level_ideal = K3.fractional_ideal(1)
+            sage: H = ExtendedHilbertModularGroup(K3, lattice_ideal, level_ideal)
+            sage: H.cusp_normalizing_map(H.cusps()[0])
+            [    0 1/6*a]
+            [ -2*a     0]
+            sage: K2.<a> = QuadraticField(5)
+            sage: lattice_ideal = K2.fractional_ideal(1)
+            sage: level_ideal = K2.fractional_ideal(3)
+            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
+            sage: H.ncusps()
+            2
+            sage: H.cusps()[1]
+            Cusp [1: 3] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal
+            sage: H.cusp_normalizing_map(H.cusps()[1])
+            [1 0]
+            [3 1]
+        """
+        base_nf = self.number_field()
+        if not isinstance(cusp, NFCusp_wrt_lattice_ideal) or cusp.number_field() != base_nf:
+            raise ValueError(f"Input should be a NF cusp defined over {base_nf}!")
+        ca, cb = (cusp.numerator(), cusp.denominator())
+        if not (ca, cb) in self._cusp_normalizing_maps:
+            # First find the equivalent representative
+            # crep, B = self.cusp_representative(cusp,return_map=True)
+            # crepa,crepb = crep.numerator(),crep.denominator()
+            # crep_normalizing_map = self._cusp_normalizing_maps.get((crepa,crepb))
+            # if not crep_normalizing_map:
+            # Find a normalizing map of the cusp representative
+            a, b, c, d = cusp.GHmatrix_wrt_lattice_ideal()
+            det = a * d - b * c
+            A = Matrix(self.number_field(), 2, 2, [a, b / det, c, d / det])
+            # A = B.matrix().inverse()*crep_normalizing_map
+            if check:
+                infinity = NFCusp_wrt_lattice_ideal(self.lattice_ideal(), 1, 0)
+                if infinity.apply(A.list()) != cusp or A.det() != 1:
+                    msg = f"Did not get correct normalizing map A={A} to cusp: {cusp}"
+                    raise ArithmeticError(msg)
+            logger.debug(f"A={0}".format(A))
+            logger.debug("A.det()={0}".format(A.det().complex_embeddings()))
+            self._cusp_normalizing_maps_inverse[(ca, cb)] = A.inverse()
+            self._cusp_normalizing_maps[(ca, cb)] = A
+        if inverse:
+            return self._cusp_normalizing_maps_inverse[(ca, cb)]
+        else:
+            return self._cusp_normalizing_maps[(ca, cb)]
+
+    def apply_cusp_normalizing_map(self, cusp, z, inverse=False):
+        """
+        Apply the cusp normalizing map associated with the cusp to an element z
+        INPUT:
+        - `cusp` - an instance of NFcusp_wrt_lattice_ideal
+        - `z` - an element in
+             - the base number field
+             - the set for cusps wrt lattice_ideal
+             - in ComplexPlaneProductElement__class
+        - `inverse` - set to True if applying the inverse map
+
+        EXAMPLES::
+
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup, NFCusp_wrt_lattice_ideal
+            sage: K6.<a> = QuadraticField(10)
+            sage: lattice_ideal = K6.fractional_ideal(1)
+            sage: level_ideal = K6.fractional_ideal(1)
+            sage: H = ExtendedHilbertModularGroup(K6, lattice_ideal, level_ideal)
+            sage: H.apply_cusp_normalizing_map(H.cusps()[1], 1.0)
+            -1.30152725142729
+            sage: z = NFCusp_wrt_lattice_ideal(lattice_ideal, 1)
+            sage: H.apply_cusp_normalizing_map(H.cusps()[1], z)
+            Cusp [-535*a - 2585: 3286] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
+            sage: z = ComplexPlaneProductElement([CC(1,0),CC(1,0)]); z
+            [1.00000000000000, 1.00000000000000]
+            sage: H.apply_cusp_normalizing_map(H.cusps()[1], z)
+            [-0.271814197142397, -1.30152725142729]
+            sage: H.apply_cusp_normalizing_map(H.cusps()[1], 1).complex_embeddings()
+            [-0.271814197142397, -1.30152725142729]
+        """
+        a, b, c, d = self.cusp_normalizing_map(cusp, inverse=inverse).list()
+        if z == infinity:
+            return a / c
+        number_field = self.number_field()
+        if isinstance(z, NFCusp_wrt_lattice_ideal) and z.number_field() == number_field:
+            return z.apply([a, b, c, d])
+        if z in number_field:
+            return (a * z + b) / (c * z + d)
+        if isinstance(z, ComplexPlaneProductElement__class) and \
+                z.degree() == number_field.absolute_degree():
+            return z.apply(matrix(2, 2, [a, b, c, d]))
+        raise ValueError("Unsupported type for action with cusp normalizer! (z={0})".format(z))
