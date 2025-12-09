@@ -709,26 +709,57 @@ def ideal_wrt_lattice_ideal(lattice_ideal, x: tuple):
     else:
         return x[0] * K.OK().fractional_ideal(1) + x[1] * (lattice_ideal.inverse())
 
+def fundamental_unit_generator(K):
+    """
+    Return a list of fundamental units of the full unit group such that no unit in the list has all
+    embeddings σ_i(x) negative.
+    Example::
+        sage: from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import fundamental_unit_generator
+        sage: K2.<a> = QuadraticField(2)
+        sage: fundamental_unit_generator(K2)
+        [a + 1]
+        sage: K4.<a> = NumberField(x**4 - 17*x**2 + 36)
+        sage: fundamental_unit_generator(K4)
+        [1/12*a^3 - 11/12*a + 1/2,
+         1/12*a^3 - 23/12*a - 5/2,
+        -1/6*a^3 + 1/2*a^2 + 7/3*a - 7]
+        sage: K8.<a> = NumberField(x^3-36*x-1)
+        sage: fundamental_unit_generator(K8)
+        [a, a + 6]
+    """
+    generator = []
+    for t in K.unit_group().fundamental_units():
+        if all(phi(t) < 0 for phi in K.embeddings(RR)):
+            t = -t
+            generator.append(t)
+        else:
+            generator.append(t)
+    return generator
 
 def sign_matrix_real_field(K):
     """
     Compute the sign matrix of a totally real number field K.
     Rows = embeddings into RR
     Columns = generators (-1 and fundamental units)
-
-        sage: from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import sign_matrix_real_field
-        sage: K1.<a> = QuadraticField(2)
-        sage: sign_matrix_real_field(K1)
-        [-1 -1]
-        [-1  1]
-        sage: K4.<a> = QuadraticField(10)
-        sage: sign_matrix_real_field(K4)
-        [-1  1]
-        [-1 -1]
-
+    Example::
+       sage: from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import sign_matrix_real_field
+       sage: K2.<a> = QuadraticField(2)
+       sage: sign_matrix_real_field(K2)
+       [-1]
+       [ 1]
+       sage: K4.<a> = NumberField(x**4 - 17*x**2 + 36)
+       sage: sign_matrix_real_field(K4)
+       [-1  1  1]
+       [ 1  1 -1]
+       [-1 -1 -1]
+       [ 1 -1 -1]
+       sage: K8.<a> = NumberField(x^3-36*x-1)
+       sage: sign_matrix_real_field(K8)
+       [-1  1]
+       [-1  1]
+       [ 1  1]
     """
-    Uk = K.unit_group()
-    gens = Uk.gens_values()
+    gens = fundamental_unit_generator(K)
     embs = K.embeddings(RR)
     data = []
     for phi in embs:
@@ -737,51 +768,33 @@ def sign_matrix_real_field(K):
             val = phi(g)
             row.append(1 if val > 0 else -1)
         data.append(row)
-
     return Matrix(ZZ, data)
 
 
-def totally_positive_unit_group_generators(K, gen_form = 'gen'):
+def totally_positive_unit_group_generators(K):
     """
-    Return the generators of the totally positive unit group. Return the generators in vectors form:
-    Input:
+    Return a list of n-1 generator of totally positive unit group. Here n is degree of extension of K over Q.
+    Example::
 
-    - `` K `` :  Number Field
-    - `` gen_form`` : 'gen' or 'vgen'
-
-    Output: A list of generators in scalar form if gen_form is 'gen' otherwise a list of generators in vector
-            forms will be given
-
-    sage: from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import totally_positive_unit_group_generators
-    sage: K2.<a> = QuadraticField(5)
-    sage: totally_positive_unit_group_generators(K2)
-    [-1/2*a + 3/2]
-    sage: totally_positive_unit_group_generators(K2, 'vgen')
-    [[(-1/2*a + 1/2, 2)]]
-    sage: K3.<a> = QuadraticField(10)
-    sage: totally_positive_unit_group_generators(K3)
-    [-6*a + 19]
-    sage: totally_positive_unit_group_generators(K3, 'vgen')
-    [[(-a + 3, 2)]]   # (-a+3)**2 = -6*a + 19
-    sage: K4 = NumberField(x^3-36*x-1, names = 'a')
-    sage: totally_positive_unit_group_generators(K4)
-    [a + 6, a^2]
-    sage: totally_positive_unit_group_generators(K4, 'vgen')
-    [[(-1, 1), (a, 0), (-a - 6, 1)], [(a, 2)]]   # (-1)^1*a^0*(-a-6)^1 = a+6, a^2 = a^2
-    sage: K5.<a> = NumberField(x^4-17*x**2+36)
-    sage: totally_positive_unit_group_generators(K5)
-    [1/12*a^3 - 11/12*a + 3/2,
-    -5/12*a^3 + 115/12*a + 27/2,
-    -11/6*a^3 - 7/2*a^2 + 80/3*a + 51]
-    sage: totally_positive_unit_group_generators(K5, 'vgen')
-    [[(-1/12*a^3 + 11/12*a - 1/2, 2)],
-    [(-1/12*a^3 + 23/12*a + 5/2, 2)],
-    [(-1/6*a^3 - 1/2*a^2 + 7/3*a + 7, 2)]]
+        sage: from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import totally_positive_unit_group_generators
+        sage: K2.<a> = QuadraticField(2)
+        sage: totally_positive_unit_group_generators(K2)
+        [2*a + 3]
+        sage: K4.<a> = NumberField(x**4 - 17*x**2 + 36)
+        sage: totally_positive_unit_group_generators(K4)
+        [1/12*a^3 - 11/12*a + 3/2,
+        -5/12*a^3 + 115/12*a + 27/2,
+         11/6*a^3 - 7/2*a^2 - 80/3*a + 51]
+        sage: K3.<a> = QuadraticField(3)
+        sage: totally_positive_unit_group_generators(K3)
+        [a + 2]
+        sage: K10.<a> = QuadraticField(10)
+        sage: totally_positive_unit_group_generators(K10)
+        [6*a + 19]
     """
-    Uk = K.unit_group()
-    ulist = Uk.gens_values()
+    ulist = fundamental_unit_generator(K)
     n = len(ulist)
-    vlist = list(itertools.product([0, 1], repeat=n))
+    vlist = list(itertools.product([0, 1], repeat = n))
     M = sign_matrix_real_field(K)
     M = M.apply_map(lambda x: 0 if x == 1 else 1).change_ring(GF(2))
     svectors = []
@@ -793,25 +806,19 @@ def totally_positive_unit_group_generators(K, gen_form = 'gen'):
     V = svectors[0].parent()
     U = V.subspace(svectors)
     B = U.basis()
+    BZ = [tuple(int(e) for e in v) for v in B]
+    sq = [[2 if i == j else 0 for j in range(n)] for i in range(n)]
+    for row in BZ:
+        sq.append(list(row))
+    E = Matrix(ZZ, sq)
+    basis = E.row_module().basis()
     gen = []
-    vgen = []
-    for v in B:
-        temp = []
+    for v in basis:
         s = 1
-        for i in range(0, n):
-            temp.append((ulist[i], v[i]))
-            s = s * ulist[i] ** v[i]
-        vgen.append(temp)
+        for i in range (0, n):
+            s = s* ulist[i]**v[i]
         gen.append(s)
-    for i in range(1, n):
-        if all(ulist[i] ** 2 != g ** 2 for g in gen):
-            vgen.append([(ulist[i], 2)])
-            gen.append(ulist[i] ** 2)
-    if gen_form == 'gen':
-        return gen
-    else:
-        return vgen
-
+    return gen
 
 def units_mod_ideal(I, tp_units=True):
     """

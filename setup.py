@@ -51,6 +51,19 @@ ext_modules = [
         language='c++',
         extra_compile_args=extra_compile_args+['-std=c++11'],
         include_dirs=INCLUDE_DIRS, library_dirs=LIBRARY_DIRS
+    ),
+Extension(
+        'extended_hilbert_modgroup.extended_hilbert_modular_group_element',
+        sources=[os.path.join('src/extended_hilbert_modgroup/extended_hilbert_modular_group_element.pyx')],
+        extra_compile_args=extra_compile_args,
+        include_dirs=INCLUDE_DIRS, library_dirs=LIBRARY_DIRS
+    ),
+    Extension(
+        'extended_hilbert_modgroup.extended_pullback_cython',
+        sources=[os.path.join('src/extended_hilbert_modgroup/extended_pullback_cython.pyx')],
+        language='c++',
+        extra_compile_args=extra_compile_args+['-std=c++11'],
+        include_dirs=INCLUDE_DIRS, library_dirs=LIBRARY_DIRS
     )
 ]
 
