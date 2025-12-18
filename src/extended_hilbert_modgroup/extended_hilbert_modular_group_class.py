@@ -533,11 +533,11 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         sage: H5.cusps()
         [Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal,
          Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to lattice_ideal]
-        sage: lattice_ideal = K2.fractional_ideal(7)
-        sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
-        sage: H.cusps()
+        sage: lattice_ideal = K5.fractional_ideal(7)
+        sage: H5 = ExtendedHilbertModularGroup(K5, lattice_ideal, level_ideal)
+        sage: H5.cusps()
         [Cusp [0: 7] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal,
-         Cusp [1: 21] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal]
+         Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to lattice_ideal]
         """
         K = self.number_field()
         lattice_ideal = self.lattice_ideal()
@@ -603,19 +603,16 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         Return the number of cusp associated to self.
 
             sage: from extended_hilbert_modgroup.all  import ExtendedHilbertModularGroup
-            sage: K2.<a> = QuadraticField(5)
-            sage: H = ExtendedHilbertModularGroup(K2)
-            sage: H.ncusps()
-            1
-            sage: level_ideal = K6.fractional_ideal(3)
-            sage: H = ExtendedHilbertModularGroup(K2, level_ideal = level_ideal)
-            sage: H.ncusps()
+            sage: K2.<a> = QuadraticField(2)
+            sage: lattice_ideal = K2.fractional_ideal(7)
+            sage: level_ideal = K2.fractional_ideal(83)
+            sage: H2 = ExtendedHilbertModularGroup(K2, lattice_ideal = lattice_ideal, level_ideal = level_ideal)
+            sage: H2.ncusps()
+            2
+            sage: level_ideal = K2.fractional_ideal(9)
+            sage: H2 = ExtendedHilbertModularGroup(K2, lattice_ideal = lattice_ideal, level_ideal = level_ideal)
+            sage: H2.ncusps()
             4
-            sage: K2.<a> = QuadraticField(5)
-            sage: lattice_ideal = K2.fractional_ideal(1)
-            sage: level_ideal = K2.fractional_ideal(3)
-            sage: H = ExtendedHilbertModularGroup(K2, level_ideal = level_ideal)
-            sage: H.ncusps()
         """
         K = self.number_field()
         N = self.level_ideal()
@@ -704,26 +701,25 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: K6.<a> = QuadraticField(10)
-            sage: lattice_ideal = K6.different()
-            sage: level_ideal = K6.fractional_ideal(7)
-            sage: H = ExtendedHilbertModularGroup(K6, lattice_ideal, level_ideal)
+            sage: K10.<a> = QuadraticField(10)
+            sage: lattice_ideal = K10.different()
+            sage: level_ideal = K10.fractional_ideal(7)
+            sage: H10 = ExtendedHilbertModularGroup(K10, lattice_ideal, level_ideal)
             sage: from extended_hilbert_modgroup.all import NFCusp_wrt_lattice_ideal
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, 0, 1)
-            sage: H.cusp_representative(c)
+            sage: H10.cusp_representative(c)
             Cusp [0: -2*a] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
-            sage: a = H.number_field().gen()
-            sage: a = H.number_field().gen()
-            sage: x, y = 3*a - 10, a-4
+            sage: a = H10.number_field().gen()
+            sage: x, y = 3*a-10, a-4
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, x, y)
-            sage: H.cusp_representative(c)
-            Cusp [2*a + 1: 14*a - 80] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
-            sage: K2.<a> = QuadraticField(5)
-            sage: lattice_ideal = K2.fractional_ideal(2)
-            sage: level_ideal = K2.fractional_ideal(3)
-            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal, False)
+            sage: H10.cusp_representative(c)
+            Cusp [-2*a - 1: -14*a + 80] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
+            sage: K5.<a> = QuadraticField(5)
+            sage: lattice_ideal = K5.fractional_ideal(2)
+            sage: level_ideal = K5.fractional_ideal(3)
+            sage: H5 = ExtendedHilbertModularGroup(K5, lattice_ideal, level_ideal, False)
             sage: c = NFCusp_wrt_lattice_ideal(lattice_ideal, 2, a)
-            sage: H.cusp_representative(c)
+            sage: H5.cusp_representative(c)
             Cusp [0: 2] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal
 
         """
@@ -751,25 +747,27 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         If inverse = True then return A^-1
 
         EXAMPLES::
+
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
             sage: K3.<a> = QuadraticField(3)
             sage: lattice_ideal = K3.different()
             sage: level_ideal = K3.fractional_ideal(1)
-            sage: H = ExtendedHilbertModularGroup(K3, lattice_ideal, level_ideal)
-            sage: H.cusp_normalizing_map(H.cusps()[0])
-            [    0 1/6*a]
-            [ -2*a     0]
-            sage: K2.<a> = QuadraticField(5)
-            sage: lattice_ideal = K2.fractional_ideal(1)
-            sage: level_ideal = K2.fractional_ideal(3)
-            sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal, level_ideal)
-            sage: H.ncusps()
-            2
-            sage: H.cusps()[1]
-            Cusp [1: 3] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal
-            sage: H.cusp_normalizing_map(H.cusps()[1])
+            sage: H3 = ExtendedHilbertModularGroup(K3, lattice_ideal, level_ideal)
+            sage: H3.cusp_normalizing_map(H3.cusps()[0])
             [1 0]
-            [3 1]
+            [0 1]
+            sage: K5.<a> = QuadraticField(5)
+            sage: lattice_ideal = K5.fractional_ideal(1)
+            sage: level_ideal = K5.fractional_ideal(3)
+            sage: H5 = ExtendedHilbertModularGroup(K5, lattice_ideal, level_ideal)
+            sage: H5.ncusps()
+            2
+            sage: H5.cusps()[1]
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to lattice_ideal
+            sage: H5.cusps()[0]
+            Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal
+            sage: H5.cusp_normalizing_map(H5.cusps()[0])
+            [ 0 -1]
         """
         base_nf = self.number_field()
         if not isinstance(cusp, NFCusp_wrt_lattice_ideal) or cusp.number_field() != base_nf:
@@ -813,22 +811,24 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
 
         EXAMPLES::
 
-            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup, NFCusp_wrt_lattice_ideal
-            sage: K6.<a> = QuadraticField(10)
-            sage: lattice_ideal = K6.fractional_ideal(1)
-            sage: level_ideal = K6.fractional_ideal(1)
-            sage: H = ExtendedHilbertModularGroup(K6, lattice_ideal, level_ideal)
-            sage: H.apply_cusp_normalizing_map(H.cusps()[1], 1.0)
-            -1.30152725142729
+            sage: from extended_hilbert_modgroup.all import NFCusp_wrt_lattice_ideal
+            sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
+            sage: K10.<a> = QuadraticField(10)
+            sage: lattice_ideal = K10.fractional_ideal(1)
+            sage: level_ideal = K10.fractional_ideal(1)
+            sage: H10 = ExtendedHilbertModularGroup(K10, lattice_ideal, level_ideal)
+            sage: H10.apply_cusp_normalizing_map(H10.cusps()[1], 1.0)
+            -1.30229210112909
             sage: z = NFCusp_wrt_lattice_ideal(lattice_ideal, 1)
-            sage: H.apply_cusp_normalizing_map(H.cusps()[1], z)
-            Cusp [-535*a - 2585: 3286] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
+            sage: H10.apply_cusp_normalizing_map(H10.cusps()[1], z)
+            Cusp [-1512*a - 7300: 9277] of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal
+            sage: from hilbert_modgroup.all import ComplexPlaneProductElement
             sage: z = ComplexPlaneProductElement([CC(1,0),CC(1,0)]); z
             [1.00000000000000, 1.00000000000000]
-            sage: H.apply_cusp_normalizing_map(H.cusps()[1], z)
-            [-0.271814197142397, -1.30152725142729]
-            sage: H.apply_cusp_normalizing_map(H.cusps()[1], 1).complex_embeddings()
-            [-0.271814197142397, -1.30152725142729]
+            sage: H10.apply_cusp_normalizing_map(H10.cusps()[1], z)
+            [-0.271492527522411, -1.30229210112909]
+            sage: H10.apply_cusp_normalizing_map(H10.cusps()[1], 1).complex_embeddings()
+            [-0.271492527522411, -1.30229210112909]
         """
         a, b, c, d = self.cusp_normalizing_map(cusp, inverse=inverse).list()
         if z == infinity:
