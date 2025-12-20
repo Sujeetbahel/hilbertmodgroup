@@ -39,9 +39,13 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             sage: f = K3.unit_group().fundamental_units()[0]
             sage: H = ExtendedHilbertModularGroup(K3, tp_units = False)
             sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, 0, f]); A
+            Traceback (most recent call last):
+            ...
             TypeError: matrix testing must have determinant 1
             sage: H = ExtendedHilbertModularGroup(K3, tp_units = True)
             sage: A = ExtendedHilbertModularGroupElement(H, [1, 0, 0, f]); A
+            Traceback (most recent call last):
+            ...
             TypeError: matrix must have determinant equal to totally positive unit
         """
         #print(" in init withx=",parent,x)
@@ -238,7 +242,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroupElement
             sage: K2.<a> = QuadraticField(5)
-            sage: lattice_ideal = K.different()
+            sage: lattice_ideal = K2.different()
             sage: H = ExtendedHilbertModularGroup(K2, lattice_ideal)
             sage: x, y = (lattice_ideal**-1).gens()
             sage: A = ExtendedHilbertModularGroupElement(H, [1, y, 0, 1])
@@ -332,7 +336,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
 
         An example of A acting on an element of the base field:
 
-            sage: a = K.gen()
+            sage: a = K2.gen()
             sage: z = a/7 +1/12; z
             1/7*a + 1/12
             sage: z in A.number_field()
@@ -491,7 +495,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             [
             [ 1.00000000000000 0.000000000000000]
             [0.000000000000000  2.61803398874989],
-
+            <BLANKLINE>
             [ 1.00000000000000 0.000000000000000]
             [0.000000000000000 0.381966011250105]
             ]
@@ -499,7 +503,7 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
             [
             [ 1.00000000000000000000000000000 0.000000000000000000000000000000]
             [0.000000000000000000000000000000  2.61803398874989484820458683437],
-
+            <BLANKLINE>
             [ 1.00000000000000000000000000000 0.000000000000000000000000000000]
             [0.000000000000000000000000000000 0.381966011250105151795413165634]
             ]

@@ -65,6 +65,7 @@ class NFCusp_wrt_lattice_ideal(Element):
         respect to  lattice_ideal
         sage: from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import ideal_wrt_lattice_ideal
         sage: ideal_wrt_lattice_ideal(lattice_ideal, (2*a+2, 2*a)) in lreps
+        True
     """
 
     def __init__(self, lattice_ideal, a, b = None, parent = None, lreps = None):
@@ -531,12 +532,13 @@ class NFCusp_wrt_lattice_ideal(Element):
             sage: lattice_ideal = K3.fractional_ideal(1)
             sage: level_ideal = K3.fractional_ideal(5)
             sage: from extended_hilbert_modgroup.all import ExtendedHilbertModularGroup
-            sage: H = ExtendedHilbertModularGroup(K, lattice_ideal, level_ideal)
-            sage: H.ncusps()
+            sage: H3 = ExtendedHilbertModularGroup(K3, lattice_ideal, level_ideal)
+            sage: H3.ncusps()
             2
-            sage: H.cusps()
-            [Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878? with respect to  lattice_ideal,
-             Cusp [1: 5] of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878? with respect to  lattice_ideal]
+            sage: H3.cusps()
+            [Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878?
+            with respect to  lattice_ideal, Cusp Infinity of Number Field in a with defining polynomial
+            x^2 - 3 with a = 1.732050807568878? with respect to lattice_ideal]
             sage: t1 = NFCusp_wrt_lattice_ideal(lattice_ideal, 0, 1)
             sage: t2 = NFCusp_wrt_lattice_ideal(lattice_ideal, 1, 5)
             sage: t3 = NFCusp_wrt_lattice_ideal(lattice_ideal, 1, 0)
@@ -638,7 +640,7 @@ def gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal):
         Return the two generators (a, b) of the ideal in the sense, ideal= a*OK + b*(lattice_ideal.inverse())
 
         EXAMPLES::
-            sage: from hilbert_modgroup.all import gens_reduced_wrt_lattice_ideal
+            sage: from extended_hilbert_modgroup.all import gens_reduced_wrt_lattice_ideal
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 5)
             sage: lattice_ideal = K.different()
@@ -684,7 +686,10 @@ def ideal_wrt_lattice_ideal(lattice_ideal, x: tuple):
         Return the ideal  in the sense, ideal = a*OK + b*(lattice_ideal.inverse())
 
         EXAMPLES::
-            sage: sage: from hilbert_modgroup.all import ideal_wrt_lattice_ideal
+            sage: from extended_hilbert_modgroup.all import (
+            ....:  ideal_wrt_lattice_ideal,
+            ....: gens_reduced_wrt_lattice_ideal
+            ....: )
             sage: x = polygen(ZZ, 'x')
             sage: K.<a> = NumberField(x^2 - 5)
             sage: lattice_ideal=K.different()
@@ -693,7 +698,6 @@ def ideal_wrt_lattice_ideal(lattice_ideal, x: tuple):
             (3, 0)
             sage: ideal_wrt_lattice_ideal(lattice_ideal, gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal)) == ideal
             True
-
             sage: K1 = NumberField(x**4 - 17*x**2 + 36,names='a')
             sage: a=K1.gen()
             sage: lattice_ideal = K1.different()
@@ -720,9 +724,9 @@ def fundamental_unit_generator(K):
         [a + 1]
         sage: K4.<a> = NumberField(x**4 - 17*x**2 + 36)
         sage: fundamental_unit_generator(K4)
-        [1/12*a^3 - 11/12*a + 1/2,
-         1/12*a^3 - 23/12*a - 5/2,
-        -1/6*a^3 + 1/2*a^2 + 7/3*a - 7]
+        [-1/12*a^3 + 11/12*a - 1/2,
+         -1/12*a^3 + 23/12*a + 5/2,
+        -1/6*a^3 - 1/2*a^2 + 7/3*a + 7]
         sage: K8.<a> = NumberField(x^3-36*x-1)
         sage: fundamental_unit_generator(K8)
         [a, a + 6]
@@ -749,10 +753,10 @@ def sign_matrix_real_field(K):
        [ 1]
        sage: K4.<a> = NumberField(x**4 - 17*x**2 + 36)
        sage: sign_matrix_real_field(K4)
-       [-1  1  1]
-       [ 1  1 -1]
-       [-1 -1 -1]
-       [ 1 -1 -1]
+       [ 1 -1  1]
+       [-1 -1  1]
+       [ 1  1  1]
+       [-1  1 -1]
        sage: K8.<a> = NumberField(x^3-36*x-1)
        sage: sign_matrix_real_field(K8)
        [-1  1]
@@ -783,14 +787,14 @@ def totally_positive_unit_group_generators(K):
         sage: K4.<a> = NumberField(x**4 - 17*x**2 + 36)
         sage: totally_positive_unit_group_generators(K4)
         [1/12*a^3 - 11/12*a + 3/2,
-        -5/12*a^3 + 115/12*a + 27/2,
-         11/6*a^3 - 7/2*a^2 - 80/3*a + 51]
+         -5/12*a^3 + 115/12*a + 27/2,
+         -11/6*a^3 - 7/2*a^2 + 80/3*a + 51]
         sage: K3.<a> = QuadraticField(3)
         sage: totally_positive_unit_group_generators(K3)
-        [a + 2]
+        [-a + 2]
         sage: K10.<a> = QuadraticField(10)
         sage: totally_positive_unit_group_generators(K10)
-        [6*a + 19]
+        [-6*a + 19]
     """
     ulist = fundamental_unit_generator(K)
     n = len(ulist)
