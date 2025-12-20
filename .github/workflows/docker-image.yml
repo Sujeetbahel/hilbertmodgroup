@@ -23,5 +23,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag hilbertmodgroup:${{ steps.date.outputs.date }}
-    - name: Run tox on current commit
-      run: docker run -t -e GIT_BRANCH=${{ github.sha }} --init hilbertmodgroup:${{ steps.date.outputs.date }} tox
+    - name: Run Sage doctests
+      run: |
+        docker run -t -e GIT_BRANCH=${{ github.sha }} --init hilbertmodgroup:${{ steps.date.outputs.date }} \
+        sage -t -p 0 /home/sage/hilbertmodgroup/src /home/sage/hilbertmodgroup/examples
+
+    - name: Run tox (without doctest)
+      run: |
+        docker run -t -e GIT_BRANCH=${{ github.sha }} --init hilbertmodgroup:${{ steps.date.outputs.date }} tox
+
