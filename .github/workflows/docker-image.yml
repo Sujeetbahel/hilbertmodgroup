@@ -30,5 +30,7 @@ jobs:
 
     - name: Run tox (without doctest)
       run: |
-        docker run -t -e GIT_BRANCH=${{ github.sha }} --init hilbertmodgroup:${{ steps.date.outputs.date }} tox
+        docker run -t -e GIT_BRANCH=${{ github.sha }} --init hilbertmodgroup:${{ steps.date.outputs.date }} \
+        tox -e coverage,pycodestyle,relint,codespell
+
 
