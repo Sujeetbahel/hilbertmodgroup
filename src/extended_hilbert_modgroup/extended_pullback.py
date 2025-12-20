@@ -1,6 +1,6 @@
 ##pullback
 from extended_hilbert_modgroup.extended_hilbert_modular_group_class import \
-    ExtendedHilbertModularGroup_class
+    ExtendedHilbertModularGroup_class, ExtendedHilbertModularGroup
 from sage.all import ZZ
 from sage.categories.sets_cat import cartesian_product
 from sage.functions.other import floor
@@ -14,7 +14,6 @@ from sage.rings.real_double import RDF
 from sage.rings.real_mpfr import RealField
 from sage.structure.sage_object import SageObject
 from sage.matrix.all import Matrix
-from hilbert_modgroup.pullback import HilbertPullback
 
 from hilbert_modgroup.upper_half_plane import \
     ComplexPlaneProductElement__class, \
@@ -1386,38 +1385,6 @@ class ExtendedHilbertPullback(SageObject):
         """
         return self._matrix_BLambda_row_sum(i).exp()
 
-    #@cached_method
-    #def _exp_matrix_BLambda_norm(self):
-    #    r"""
-    #    Compute e^{|| B_{\Lambda} ||_{\infty}/2 }
-
-    #    EXAMPLES::
-
-    #        sage: from extended_hilbert_modgroup.all import *
-    #        sage: H1 = ExtendedHilbertModularGroup(5)
-    #        sage: P1 = ExtendedHilbertPullback(H1)
-    #        sage: P1._exp_matrix_BLambda_norm()
-    #        1.272019649514069
-
-    #        sage: H2 = ExtendedHilbertModularGroup(10)
-    #        sage: P2 = ExtendedHilbertPullback(H2)
-    #        sage: P2._exp_matrix_BLambda_norm()
-    #        2.4823935345082533
-
-    #        sage: H3=ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
-    #        sage: P3=ExtendedHilbertPullback(H3)
-    #        sage: P3._exp_matrix_BLambda_norm()
-    #        20.72428345635302
-    #        sage: K = QuadraticField(3)
-    #        sage: lattice_ideal = K.different()
-    #        sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
-    #        sage: P4 = ExtendedHilbertPullback(H4)
-    #        sage: P4._exp_matrix_BLambda_norm()
-    #        1.9318516525781364
-
-    #    """
-    #    return self.basis_matrix_logarithmic_unit_lattice().norm(Infinity).exp().sqrt()
-
     @cached_method()
     def Di(self, i = None):  # Doing
         r"""
@@ -1501,9 +1468,6 @@ class ExtendedHilbertPullback(SageObject):
         n = self.group().number_field().degree()
         return [self.Di(i) for i in range(n)]
 
-    #
-    # A collection of bounds necessary for finding the closest cusp.
-    #
     def _bound_for_closest_cusp(self):
         """
         This is the bound such that if a cusp is closer than this then it is the closest cusp.
@@ -2189,62 +2153,22 @@ class ExtendedHilbertPullback(SageObject):
             return cusp_candidates
 
     def reduce(self, z, return_map = False):
-        r"""
-        Reduce ``z`` to a point in the fundamental domain.
-
-        INPUT:
-
-        - ``z`` -- point in the upper half-plane
-        - ``return_map`` -- boolean (default False)
-          Set to ``True`` to return the map which performed the reduction.
-
-        EXAMPLES::
-
-            sage: from extended_hilbert_modgroup.all import *
-            sage: H1=ExtendedHilbertModularGroup(5)
-            sage: P1=ExtendedHilbertPullback(H1)
-            sage: z = UpperHalfPlaneProductElement([1+I,1+I])
-            sage: P1.reduce(z)
-            [1.00000000000000*I, 1.00000000000000*I]
-            sage: z = UpperHalfPlaneProductElement([0.25+I/2,1+I])
-            sage: P1.reduce(z) # abs tol 1e-10
-            [0.694427190999916 + 0.611145618000168*I, -0.309016994374947 + 1.30901699437495*I]
-            sage: P1.reduce(z, return_map=True)[1]
-            [         -1 1/2*a + 3/2]
-            [         -1           0]
-            sage: CF = ComplexField(103)
-            sage: z = UpperHalfPlaneProductElement([CF(0.5, 0.5),CF(1,1)])
-            sage: P1.reduce(z)
-            [1.00000000000000000000000000000 + 1.00000000000000000000000000000*I, 1.00000000000000000000000000000*I]
-            sage: K = QuadraticField(3)
-            sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
-            sage: P4 = ExtendedHilbertPullback(H4)
-            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
-            sage: P4.reduce(z)
-            [1.00000000000000*I, 0.900000000000000*I]
-            sage: P4.reduce(z, return_map=True)
-            [ 1 -1]
-            [ 0  1]
-        """
+        K = self.number_field()
+        lattice_ideal = self.group().lattice_ideal()
+        level_ideal = K.fractional_ideal(1)
+        tp_units = self.group().tp_units()
+        H = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal, level_ideal = level_ideal,
+                                        tp_units = tp_units)
+        P = ExtendedHilbertPullback(H)
         if z.norm() == 0:
             raise ValueError("Can not reduce point at the boundary of one of the half-planes.")
-        c = self.find_closest_cusp(z, return_multiple = False, as_cusp = True)
-        c_rep, Umu = self.group().cusp_representative(c, return_map = True)
-        A = self._group.cusp_normalizing_map(c_rep)
-        # Move to the cusp representative
+        c = P.find_closest_cusp(z, return_multiple = False, as_cusp = True)
+        c_rep, Umu = P.group().cusp_representative(c, return_map = True)
+        A = P._group.cusp_normalizing_map(c_rep)
         w = z.apply(A.inverse() * Umu)
-        # Reduce in the corresponding cuspidal region (mapped to infinitY)
-        w, B = self.reduce_in_cuspidal_region(w, c_rep, return_map = True)
-        # Map back to the actual cuspidal region
+        w, B = P.reduce_in_cuspidal_region(w, c_rep, return_map = True)
         w = w.apply(A)
-        if return_map:
-            return w, A * B * A.inverse() * Umu
-        return w
-
-    def reduce_level(self, z, return_map=False):
-        w, M = self.reduce(z, return_map=True)
-
+        M = A * B * A.inverse() * Umu
         cosets = self.group().coset_matrices()
         Mat = None
         for B in cosets:
