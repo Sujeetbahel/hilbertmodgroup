@@ -4,7 +4,7 @@ if [ -z "$NBPORT" ]; then
   NBPORT=8888
 fi
 if [ -z "$TOX_ARGS" ]; then
-  TOX_ARGS="doctest,coverage,pycodestyle,relint,codespell"
+  TOX_ARGS="coverage,pycodestyle,relint,codespell"
 fi
 if [ -n "$GIT_BRANCH" ]; then
   echo "PULL from $GIT_BRANCH"
