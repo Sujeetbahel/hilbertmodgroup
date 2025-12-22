@@ -99,19 +99,21 @@ class ExtendedHilbertPullback(SageObject):
 
         EXAMPLES::
 
-            sage: from hilbert_modgroup.all import *
             sage: from extended_hilbert_modgroup.all import *
-            sage: K2.<a> = QuadraticField(5)
-            sage: H2 = ExtendedHilbertModularGroup(K2)
-            sage: P2 = ExtendedHilbertPullback(H1)
-            sage: P2.fundamental_units()
-            [-1/2*a + 1/2]
-            sage: K4.<a> = NumberField(x^3-36*x-1)
-            sage: H4 = ExtendedHilbertModularGroup(K4)
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
+            sage: P5.fundamental_units()
+            [-1/2*a + 3/2]
+            sage: K4.<a> = NumberField(x**3 - 36*x -1)
+            sage: H4 = ExtendedHilbertModularGroup(K4, tp_units = True)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: P4.fundamental_units()
-            [a, -a - 6]
-
+            [a^2, a + 6]
+            sage: H4 = ExtendedHilbertModularGroup(K4, tp_units = False)
+            sage: P4 = ExtendedHilbertPullback(H4)
+            sage: P4.fundamental_units()
+            [a, a + 6]
         """
         K = self.group().number_field()
         tp_units = self.group().tp_units()
@@ -128,26 +130,29 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from hilbert_modgroup.all import *
-            sage: from extended_hilbert_modgroup.all import*
-            sage: K2.<a> = QuadraticField(5)
-            sage: H1 = ExtendedHilbertModularGroup(K2)
-            sage: P1 = ExtendedHilbertPullback(H1)
-            sage: P1.basis_matrix_logarithmic_unit_lattice()
+            sage: from extended_hilbert_modgroup.all import *
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
+            sage: P5.basis_matrix_logarithmic_unit_lattice()
+            [ 0.962423650119207]
+            [-0.962423650119207]
+            sage: H5 = ExtendedHilbertModularGroup(K5, tp_units = False)
+            sage: P5 = ExtendedHilbertPullback(H5)
+            sage: P5.basis_matrix_logarithmic_unit_lattice()
             [ 0.481211825059603]
             [-0.481211825059603]
-            sage: H2=ExtendedHilbertModularGroup(10)
-            sage: P2 = ExtendedHilbertPullback(H2)
-            sage: P2.basis_matrix_logarithmic_unit_lattice()
-            [ 1.81844645923207]
-            [-1.81844645923207]
-            sage: K4.<a> = NumberField(x^4-17*x**2+36)
-            sage: H4 = ExtendedHilbertModularGroup(K4)
-            sage: P4 = ExtendedHilbertPullback(H4)
-            sage: P4.basis_matrix_logarithmic_unit_lattice()
-            [-0.481211825059604  -1.64723114637109  -2.65411420456532]
-            [ 0.481211825059603  -1.64723114637109   1.00688305819419]
-            [-0.481211825059603   1.64723114637110   2.17290237950569]
-            [ 0.481211825059603   1.64723114637110 -0.525671233134591]
+            sage: K3.<a> = QuadraticField(3)
+            sage: H3 = ExtendedHilbertModularGroup(K3)
+            sage: P3 = ExtendedHilbertPullback(H3)
+            sage: P3.basis_matrix_logarithmic_unit_lattice()
+            [ 1.31695789692482]
+            [-1.31695789692482]
+            sage: H3 = ExtendedHilbertModularGroup(K3, tp_units = False)
+            sage: P3 = ExtendedHilbertPullback(H3)
+            sage: P3.basis_matrix_logarithmic_unit_lattice()
+            [ 1.31695789692482]
+            [-1.31695789692482]
 
         """
         n = self.group().number_field().degree()
@@ -169,48 +174,61 @@ class ExtendedHilbertPullback(SageObject):
 
         EXAMPLES::
 
-            sage: from extended_hilbert_modgroup.all import *
             sage: from hilbert_modgroup.all import *
-            sage: K2.<a> = QuadraticField(5)
-            sage: H2 = ExtendedHilbertModularGroup(K2)
-            sage: P2 = ExtendedHilbertPullback(H2)
-            sage: u0, u1 = K2.unit_group().gens()
+            sage: from extended_hilbert_modgroup.all import *
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
+            sage: u0, u1 = H5.number_field().unit_group().gens()
             sage: z = UpperHalfPlaneProductElement([CC(1, 1), CC(1, 1)])
-            sage: P2.Y(z)
+            sage: P5.Y(z)
             (0.000000000000000)
-            sage: P2.Y(u1*z)
+            sage: P5.Y(u1*z)
             Traceback (most recent call last):
             ...
             ValueError: Need an element of type: UpperHalfPlaneProductElement__class of degree 2
-            sage: P2.Y(u1**2*z)
-            (2.00000000000000)
-            sage: P2.Y(u1**-2*z)
-            (-2.00000000000000)
-            sage: z=UpperHalfPlaneProductElement([CC(1,3),CC(0,2)])
-            sage: P1.Y(z)
-            (0.421295869088362)
-            sage: P1.Y(u1**2*z)
-            (2.42129586908836)
+            sage: P5.Y(u1**2*z)
+            (1.00000000000000)
+            sage: P5.Y(u1**-2*z)
+            (-1.00000000000000)
+            sage: z = UpperHalfPlaneProductElement([CC(1,3),CC(0,2)])
+            sage: P5.Y(z)
+            (0.210647934544181)
+            sage: P5.Y(u1**2*z)
+            (1.21064793454418)
 
             # The precision gets worse when the imaginary parts have large differences.
+            sage: P5.Y(u1**2*z)
+            (1.21064793454418)
+            sage: P5.Y(u1**-2*z)
+            (-0.789352065455819)
+            sage: z = UpperHalfPlaneProductElement([CC(1,3),CC(0,2)])
+            sage: P5.Y(z)
+            (0.210647934544181)
+            sage: P5.Y(u1**2*z)
+            (1.21064793454418)
             sage: K4.<a> = NumberField(x^3-36*x-1)
             sage: H4 = ExtendedHilbertModularGroup(K4)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1, 1), CC(0, 2), CC(0, 1)])
             sage: P4.Y(z, return_error_estimate = True)
+            ((-0.0644538365770865, 0.0000882959672881664), 2.220446049250313e-16)
+            sage: H4 = ExtendedHilbertModularGroup(K4, tp_units = False)
+            sage: P4 = ExtendedHilbertPullback(H4)
+            sage: P4.Y(z, return_error_estimate = True)
             ((-0.128907673154173, 0.0000882959672881664), 2.220446049250313e-16)
             sage: z = UpperHalfPlaneProductElement([CC(0, 100), CC(0, 200), CC(0, 100)])
+            sage: H4 = ExtendedHilbertModularGroup(K4)
+            sage: P4 = ExtendedHilbertPullback(H4)
             sage: P4.Y(z, return_error_estimate = True)
-            ((-0.128907673154173, 0.0000882959672880350), 6.38378239159465e-16)
+            ((-0.0644538365770865, 0.0000882959672880350), 6.38378239159465e-16)
             sage: z = UpperHalfPlaneProductElement([CC(0, 1), CC(0, 2), CC(0, 100)])
-            sage: P4.Y(z)
-            (0.638975592292095, 0.680877344221728)
             sage: P4.Y(z, return_error_estimate = True)
-            ((0.638975592292095, 0.680877344221728), 1.199040866595169e-14)
+            ((0.319487796146047, 0.680877344221728), 1.199040866595169e-14)
             sage: CF = ComplexField(103)
             sage: z = UpperHalfPlaneProductElement([CF(0, 1), CF(0, 2), CF(0, 100)])
             sage: P4.Y(z, return_error_estimate = True)
-            ((0.638975592292096614058401061492, 0.680877344221731788614078673856),
+            ((0.319487796146048307029200530746, 0.680877344221731788614078673856),
             1.2227344030925683e-29)
         """
         self._check_upper_half_plane_element(z)
@@ -234,22 +252,21 @@ class ExtendedHilbertPullback(SageObject):
                             Set to True to return the map which does the reduction.
 
         EXAMPLES::
-
             sage: from hilbert_modgroup.all import *
             sage: from extended_hilbert_modgroup.all import *
-            sage: K2.<a> = QuadraticField(5)
-            sage: H2 = ExtendedHilbertModularGroup(K2)
-            sage: P2 = ExtendedHilbertPullback(H2)
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
             sage: z = UpperHalfPlaneProductElement([CC(1, 1), CC(1, 1)]); z
             [1.00000000000000 + 1.00000000000000*I, 1.00000000000000 + 1.00000000000000*I]
-            sage: P2.reduce_by_units(z)
+            sage: P5.reduce_by_units(z)
             [1.00000000000000 + 1.00000000000000*I, 1.00000000000000 + 1.00000000000000*I]
             sage: z = UpperHalfPlaneProductElement([CC(1, 1), CC(1, 1000)]); z
             [1.00000000000000 + 1.00000000000000*I, 1.00000000000000 + 1000.00000000000*I]
-            sage: P2.reduce_by_units(z, return_map = True)
+            sage: P5.reduce_by_units(z, return_map = True)
             (
             [46.9787137637478 + 46.9787137637478*I, 0.0212862362522088 + 21.2862362522088*I],
-
+            <BLANKLINE>
             [-21/2*a + 47/2              0]
             [             0              1]
             )
@@ -263,7 +280,7 @@ class ExtendedHilbertPullback(SageObject):
             sage: P3.reduce_by_units(z, return_map = True)
             (
             [0.267949192431123 + 0.00267949192431123*I, 3.73205080756888 + 0.00746410161513775*I],
-
+            <BLANKLINE>
             [a + 2     0]
             [    0     1]
             )
@@ -296,40 +313,28 @@ class ExtendedHilbertPullback(SageObject):
 
         EXAMPLES::
 
+            sage: from hilbert_modgroup.all import *
             sage: from extended_hilbert_modgroup.all import *
-            sage: from hilbert_modgroup.upper_half_plane import UpperHalfPlaneProductElement
-            sage: H1 = ExtendedHilbertModularGroup(5)
-            sage: P1 = ExtendedHilbertPullback(H1)
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,1)]); z
             [1.00000000000000 + 1.00000000000000*I, 1.00000000000000 + 1.00000000000000*I]
-            sage: P1.is_reduced_by_units(z)
+            sage: P5.is_reduced_by_units(z)
             True
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(0,1000)]);z
             [1.00000000000000 + 1.00000000000000*I, 1000.00000000000*I]
-            sage: P1.is_reduced_by_units(z)
+            sage: P5.is_reduced_by_units(z)
             False
-            sage: P1.reduce_by_units(z,return_map=True)
+            sage: P5.reduce_by_units(z, return_map = True)
             (
-             [46.9787137637478 + 46.9787137637478*I, 21.2862362522088*I],
-             <BLANKLINE>
-             [-21/2*a + 47/2              0]
-             [             0              1]
-             )
+            [46.9787137637478 + 46.9787137637478*I, 21.2862362522088*I],
+            <BLANKLINE>
+            [-21/2*a + 47/2              0]
+            [             0              1]
+            )
             sage: w,A=_
-            sage: P1.is_reduced_by_units(w)
-            True
-
-            sage: H3=ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
-            sage: P3=ExtendedHilbertPullback(H3)
-            sage: z=UpperHalfPlaneProductElement([CC(0,1),CC(0,2),CC(0,1)])
-            sage: P3.is_reduced_by_units(z)
-            True
-
-            sage: z=UpperHalfPlaneProductElement([CC(0,0.0001),CC(0,0.1),CC(0,100)])
-            sage: P3.is_reduced_by_units(z)
-            False
-            sage: w,A=P3.reduce_by_units(z,return_map=True)
-            sage: P3.is_reduced_by_units(w)
+            sage: P5.is_reduced_by_units(w)
             True
 
         """
@@ -385,20 +390,20 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
-            sage: H1 = ExtendedHilbertModularGroup(5)
-            sage: P1 = ExtendedHilbertPullback(H1)
-            sage: P1.basis_matrix_ideal()
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
+            sage: P5.basis_matrix_ideal()
             [ 1.00000000000000 -1.61803398874989]
             [ 1.00000000000000 0.618033988749895]
-            sage: P1.basis_matrix_ideal(2)
+            sage: P5.basis_matrix_ideal(2)
             [ 2.00000000000000 -3.23606797749979]
             [ 2.00000000000000  1.23606797749979]
-
-            sage: K = QuadraticField(10)
-            sage: lattice_ideal = K.different()
-            sage: H2 = ExtendedHilbertModularGroup(lattice_ideal)
-            sage: P2 = ExtendedHilbertPullback(H2)
-            sage: P2.basis_matrix_ideal()
+            sage: K10.<a> = QuadraticField(10)
+            sage: lattice_ideal = K10.different()
+            sage: H10 = ExtendedHilbertModularGroup(K10)
+            sage: P10 = ExtendedHilbertPullback(H10)
+            sage: P10.basis_matrix_ideal()
             [ 1.00000000000000 -3.16227766016838]
             [ 1.00000000000000  3.16227766016838]
 
@@ -555,56 +560,26 @@ class ExtendedHilbertPullback(SageObject):
 
         EXAMPLES::
 
+            sage: from hilbert_modgroup.all import *
             sage: from extended_hilbert_modgroup.all import *
-            sage: from hilbert_modgroup.upper_half_plane import UpperHalfPlaneProductElement
-            sage: H1 = ExtendedHilbertModularGroup(5)
-            sage: P1 = ExtendedHilbertPullback(H1)
+            sage: K5.<a> = QuadraticField(5)
+            sage: H5 = ExtendedHilbertModularGroup(K5)
+            sage: P5 = ExtendedHilbertPullback(H5)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
-            sage: P1.reduce_by_translations(z,return_map=True)
+            sage: P5.reduce_by_translations(z, return_map=True)
             (
                                                       [ 1 -1]
             [1.00000000000000*I, 1.00000000000000*I], [ 0  1]
             )
             sage: z = UpperHalfPlaneProductElement([CC(3,1),CC(-1,1)])
-            sage: P1.reduce_by_translations(z,return_map=True) # abs tol 1e-10
+            sage: P5.reduce_by_translations(z, return_map = True)
             (
             [-0.236067977499790 + 1.00000000000000*I, 0.236067977499790 + 1.00000000000000*I],
             <BLANKLINE>
             [    1 a - 1]
             [    0     1]
             )
-            sage: b1,b2=H1.OK().gens(); b1+b2
-            3/2*a + 1/2
-            sage: P1.reduce_by_translations(z,b1+b2,return_map=True) # abs tol 1e-10
-            (
-            [4.76393202250021 + 1.00000000000000*I, 5.23606797749979 + 1.00000000000000*I],
-            <BLANKLINE>
-            [    1 a + 4]
-            [    0     1]
-            )
-            sage: H3=HilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
-            sage: P3=HilbertPullback(H3)
-            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
-            sage: P3.reduce_by_translations(z,return_map=True)
-            Traceback (most recent call last):
-            ...
-            ValueError: Need an element of type: UpperHalfPlaneProductElement__class of degree 3
-            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,1),CC(1,1)])
-            sage: P3.reduce_by_translations(z,return_map=True)
-            (
-                                                                          [ 1 -1]
-            [1.00000000000000*I, 1.00000000000000*I, 1.00000000000000*I], [ 0  1]
-            )
-            sage: K=QuadraticField(3)
-            sage: lattice_ideal=K.different()
-            sage: H4=ExtendedHilbertModularGroup(lattice_ideal)
-            sage: P4=ExtendedHilbertPullback(H4)
-            sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
-            sage: P4.reduce_by_translations(z, return_map=True) # abs tol 1e-10
-            (
-                                                                          [ 1 -2]
-            [-1.00000000000000 + 1.00000000000000*I, 1.00000000000000*I], [ 0  1]
-            )
+
         """
         X = self.X(z, a)
         ideala = self._construct_ideal(a)
@@ -625,29 +600,29 @@ class ExtendedHilbertPullback(SageObject):
             sage: from hilbert_modgroup.upper_half_plane import UpperHalfPlaneProductElement
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
-            sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
             sage: P1.is_reduced_by_translations(z)
             False
             sage: P1.reduce_by_translations(z)
             [1.00000000000000*I, 1.00000000000000*I]
             sage: P1.is_reduced_by_translations(P1.reduce_by_translations(z))
             True
-            sage: z=UpperHalfPlaneProductElement([CC(3,1),CC(-1,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(3,1),CC(-1,1)])
             sage: P1.is_reduced_by_translations(z)
             False
             sage: P1.is_reduced_by_translations(P1.reduce_by_translations(z))
             True
-            sage: b1,b2=H1.OK().gens(); b1+b2
+            sage: b1,b2 = H1.OK().gens(); b1+b2
             3/2*a + 1/2
             sage: P1.is_reduced_by_translations(z,b1+b2)
             False
             sage: P1.is_reduced_by_translations(P1.reduce_by_translations(z,b1+b2),b1+b2)
             True
-            sage: K=QuadraticField(3)
-            sage: lattice_ideal=K.different()
-            sage: H4=ExtendedHilbertModularGroup(lattice_ideal)
-            sage: P4=ExtendedHilbertPullback(H4)
-            sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
+            sage: K = QuadraticField(3)
+            sage: lattice_ideal = K.different()
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
+            sage: P4 = ExtendedHilbertPullback(H4)
+            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4.is_reduced_by_translations(z) # abs tol 1e-10
             False
             sage: P4.is_reduced_by_translations(P4.reduce_by_translations(z))
@@ -672,27 +647,29 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
-            sage: z=UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
             sage: P1.basis_matrix_ideal_plusz(z, P1._construct_ideal(1))
             [  1.00000000000000   1.00000000000000  0.000000000000000  0.000000000000000]
             [ -1.61803398874989  0.618033988749895  0.000000000000000  0.000000000000000]
             [ 0.000000000000000  0.000000000000000   1.00000000000000   1.00000000000000]
             [-0.000000000000000  0.000000000000000  -1.61803398874989  0.618033988749895]
-            sage: z=UpperHalfPlaneProductElement([CC(0,0.5),CC(0,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(0,0.5),CC(0,1)])
             sage: P1.basis_matrix_ideal_plusz(z,P1._construct_ideal(1))
             [  1.00000000000000   1.00000000000000  0.000000000000000  0.000000000000000]
             [ -1.61803398874989  0.618033988749895  0.000000000000000  0.000000000000000]
             [ 0.000000000000000  0.000000000000000  0.500000000000000   1.00000000000000]
             [-0.000000000000000  0.000000000000000 -0.809016994374947  0.618033988749895]
-            sage: z=UpperHalfPlaneProductElement([CC(2.2,0.5),CC(1,0.5)])
+            sage: z = UpperHalfPlaneProductElement([CC(2.2,0.5),CC(1,0.5)])
             sage: P1.basis_matrix_ideal_plusz(z,P1._construct_ideal(1))
             [  1.00000000000000   1.00000000000000  0.000000000000000  0.000000000000000]
             [ -1.61803398874989  0.618033988749895  0.000000000000000  0.000000000000000]
             [  2.20000000000000   1.00000000000000  0.500000000000000  0.500000000000000]
             [ -3.55967477524977  0.618033988749895 -0.809016994374947  0.309016994374947]
-            sage: H2 = ExtendedHilbertModularGroup(10)
+            sage: K2.<a> = QuadraticField(10)
+            sage: H2 = ExtendedHilbertModularGroup(K2)
             sage: P2 = ExtendedHilbertPullback(H2)
             sage: z=UpperHalfPlaneProductElement([CC(2,0.5),CC(1,0.2)])
             sage: P2.basis_matrix_ideal_plusz(z,P2._construct_ideal(1))
@@ -702,7 +679,7 @@ class ExtendedHilbertPullback(SageObject):
             [-6.32455532033676  3.16227766016838 -1.58113883008419 0.632455532033676]
             sage: zv = [23.3400000000000 + 0.0100000000000000*I,\
                         0.0200000000000000 + 0.0300000000000000*I]
-            sage: z=UpperHalfPlaneProductElement(zv)
+            sage: z = UpperHalfPlaneProductElement(zv)
             sage: P2.basis_matrix_ideal_plusz(z)
             [   1.00000000000000    1.00000000000000   0.000000000000000   0.000000000000000]
             [  -3.16227766016838    3.16227766016838   0.000000000000000   0.000000000000000]
@@ -710,7 +687,7 @@ class ExtendedHilbertPullback(SageObject):
             [  -73.8075605883300  0.0632455532033676 -0.0316227766016838  0.0948683298050514]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4.basis_matrix_ideal_plusz(z)
@@ -751,7 +728,9 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
-            sage: H1 = ExtendedHilbertModularGroup(5)
+            sage: from hilbert_modgroup.all import *
+            sage: K.<a> = QuadraticField(5)
+            sage: H1 = ExtendedHilbertModularGroup(K)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z = UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
             sage: P1._shortest_vectors_ideal_plusz(z)
@@ -771,7 +750,8 @@ class ExtendedHilbertPullback(SageObject):
             [ 0 -2  0  1]
             [ 1 -2  0  1]
             [ 2  0 -1  0]
-            sage: H2 = ExtendedHilbertModularGroup(10)
+            sage: K.<a> = QuadraticField(10)
+            sage: H2 = ExtendedHilbertModularGroup(K)
             sage: P2 = ExtendedHilbertPullback(H2)
             sage: z=UpperHalfPlaneProductElement([CC(2,0.5),CC(1,0.2)])
             sage: P2._shortest_vectors_ideal_plusz(z,P2._construct_ideal(1))
@@ -788,8 +768,8 @@ class ExtendedHilbertPullback(SageObject):
             [ 348 -110  -14    5]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H3 = EixtendedHlbertModularGroup(lattice_ideal)
-            sage: P3 = ExtendedHilbertPullback(H4)
+            sage: H3 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
+            sage: P3 = ExtendedHilbertPullback(H3)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P3._shortest_vectors_ideal_plusz(z)
             [ 1  0  0  0]
@@ -846,7 +826,9 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
-            sage: H1 = ExtendedHilbertModularGroup(5)
+            sage: from hilbert_modgroup.all import *
+            sage: K.<a> = QuadraticField(5)
+            sage: H1 = ExtendedHilbertModularGroup(K)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z = UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
             sage: P1.get_heuristic_closest_cusp(z)
@@ -857,6 +839,7 @@ class ExtendedHilbertPullback(SageObject):
             sage: z = UpperHalfPlaneProductElement([CC(2.2,0.5),CC(1,0.5)])
             sage: P1.get_heuristic_closest_cusp(z)
             (-1/2*a + 3/2, 1)
+            sage: K.<a> = QuadraticField(10)
             sage: H2 = ExtendedHilbertModularGroup(10)
             sage: P2 = ExtendedHilbertPullback(H2)
             sage: z = UpperHalfPlaneProductElement([CC(2,0.5),CC(1,0.2)])
@@ -879,7 +862,7 @@ class ExtendedHilbertPullback(SageObject):
             (1/3*a^2 + 1/3*a - 29/3, a - 1)
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4.get_heuristic_closest_cusp(z)
@@ -922,16 +905,14 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from hilbert_modgroup.all import *
-            sage: P1=HilbertPullback(HilbertModularGroup(5))
+            sage: K.<a> = QuadraticField(3)
+            sage: P1 = HilbertPullback(HilbertModularGroup(K))
             sage: P1._construct_cusp(1,0)
-            Cusp Infinity of Number Field in a with ... polynomial
-            x^2 - 5 with a = 2.236067977499790?
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878?
             sage: P1._construct_cusp((1,0))
-            Cusp Infinity of Number Field in a with ... polynomial
-            x^2 - 5 with a = 2.236067977499790?
-            sage: P1._construct_cusp(0,1)
-            Cusp [0: 1] of Number Field in a with ... polynomial
-            x^2 - 5 with a = 2.236067977499790?
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878?
+            sage: P1._construct_cusp(0, 1)
+            Cusp [0: 1] of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878?
         """
         lattice_ideal = self.group().lattice_ideal()
         if isinstance(c, NFCusp_wrt_lattice_ideal) and c.number_field() == self.number_field():
@@ -981,7 +962,7 @@ class ExtendedHilbertPullback(SageObject):
             sage: from hilbert_modgroup.upper_half_plane import UpperHalfPlaneProductElement
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
-            sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
             sage: P1.reduce_in_cuspidal_region(z, H1.cusps()[0])
             [1.00000000000000*I, 1.00000000000000*I]
             sage: P1.reduce_in_cuspidal_region(z,H1.cusps()[0],return_map=True)
@@ -1001,22 +982,22 @@ class ExtendedHilbertPullback(SageObject):
             sage: N = H1.cusp_normalizing_map(c)
             sage: w = z.apply(N); w
             [0.384615384615385 + 0.0769230769230769*I, 0.384615384615385 + 0.0769230769230769*I]
-            sage: P1.reduce_in_cuspidal_region(w,cusp=c,return_map=True)
+            sage: P1.reduce_in_cuspidal_region(w, cusp = c,return_map = True)
             (
             [0.384615384615385 + 0.0769230769230769*I, 0.384615384615385 + 0.0769230769230769*I],
             [1 0]
             [0 1]
             )
-            sage: P1.reduce_in_cuspidal_region(z,cusp=c,return_map=True)
+            sage: P1.reduce_in_cuspidal_region(z, cusp = c, return_map = True)
              (
                                                        [ 1 -1]
              [1.00000000000000*I, 1.00000000000000*I], [ 0  1]
              )
 
-            sage: z=UpperHalfPlaneProductElement([CC(3,1),CC(-1,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(3,1),CC(-1,1)])
             sage: P1.reduce_in_cuspidal_region(z)
             [-0.236067977499790 + 1.00000000000000*I, 0.236067977499790 + 1.00000000000000*I]
-            sage: P1.reduce_in_cuspidal_region(z,P1.group().cusps()[0],return_map=True)
+            sage: P1.reduce_in_cuspidal_region(z, P1.group().cusps()[0], return_map=True)
             (
             [-0.236067977499790 + 1.00000000000000*I, 0.236067977499790 + 1.00000000000000*I],
             <BLANKLINE>
@@ -1025,7 +1006,7 @@ class ExtendedHilbertPullback(SageObject):
             )
             sage: H3 = ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
             sage: P3 = ExtendedHilbertPullback(H3)
-            sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(2,1),CC(10,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1),CC(10,1)])
             sage: cusp = P3.group().cusps()[0]
             sage: P3.reduce_in_cuspidal_region(z, cusp,  # abs tol 1e-10
             ....:                   return_map=True)
@@ -1037,16 +1018,14 @@ class ExtendedHilbertPullback(SageObject):
             )
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: cusp = P4.group().cusps()[0]
             sage: P4.reduce_in_cuspidal_region(z, cusp, return_map = True)
             (
-            [0.0773502691896257 + 1.00000000000000*I, -0.0773502691896257 + 1.00000000000000*I],
-
-            [           1 -1/3*a - 3/2]
-            [           0            1]
+                                                                          [ 1 -2]
+            [-1.00000000000000 + 1.00000000000000*I, 1.00000000000000*I], [ 0  1]
             )
 
         """
@@ -1087,30 +1066,34 @@ class ExtendedHilbertPullback(SageObject):
             sage: P1.find_closest_cusp(z, as_cusp=False)
             (1, 0)
             sage: P1.find_closest_cusp(z)
-            Cusp Infinity of Number Field in a with ... base ideal Fractional ideal (1)
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790? with respect to lattice_ideal
             sage: P1.find_closest_cusp(z, return_multiple=True)
-            [Cusp Infinity of Number Field in a ... base ideal Fractional ideal (1),
-             Cusp [-1: -1] of Number Field in a ... base ideal Fractional ideal (1)]
+            [Cusp Infinity of Number Field in a with defining polynomial x^2 - 5 with a = 2.236067977499790?
+             with respect to lattice_ideal, Cusp [-1: -1] of Number Field in a with defining polynomial
+             x^2 - 5 with a = 2.236067977499790? with respect to  lattice_ideal]
             sage: H2 = ExtendedHilbertModularGroup(10)
             sage: K2 = H2.OK().number_field()
             sage: P2 = ExtendedHilbertPullback(H2)
             sage: z=UpperHalfPlaneProductElement([CC(0,1.0),CC(0,1.0)])
             sage: P2.find_closest_cusp(z)
-            Cusp Infinity of Number Field in a ... base ideal Fractional ideal (1)
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 10 with a = 3.162277660168380?
+            with respect to lattice_ideal
             sage: P2.find_closest_cusp(z,return_multiple=True)
-            [Cusp Infinity of Number Field in a ... base ideal Fractional ideal (1),
-             Cusp [0: 1] of Number Field in a ... base ideal Fractional ideal (1)]
+            [Cusp Infinity of Number Field in a with defining polynomial x^2 - 10 with
+            a = 3.162277660168380? with respect to lattice_ideal, Cusp [0: 1] of Number Field in a with
+            defining polynomial x^2 - 10 with a = 3.162277660168380? with respect to  lattice_ideal]
             sage: z=UpperHalfPlaneProductElement([CC(2.58,0.5),CC(0.5,0.5)])
             sage: P2.find_closest_cusp(z)
-            Cusp [-a: -a - 2] of Number Field in a ... base ideal Fractional ideal (1)
+            Cusp [-a: -a - 2] of Number Field in a with defining polynomial x^2 - 10 with
+            a = 3.162277660168380? with respect to  lattice_ideal
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4.find_closest_cusp(z)
-            Cusp Infinity of Number Field in a ... base ideal Fractional ideal (-2*a)
-
+            Cusp Infinity of Number Field in a with defining polynomial x^2 - 3 with a = 1.732050807568878?
+            with respect to lattice_ideal
 
        """
         closest_cusp = find_closest_cusp(self, z, return_multiple = return_multiple,
@@ -1134,22 +1117,22 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
-            sage: from hilbert_modgroup.upper_half_plane import UpperHalfPlaneProductElement
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z = ComplexPlaneProductElement([CC(0,1),CC(0,1)]);
-            sage: P1.distance_to_cusp_eg(H1.cusps()[0],z)
+            sage: P1.distance_to_cusp_eg(H1.cusps()[0], z)
             1.00000000000000
-            sage: P1.distance_to_cusp_eg(H1.cusps()[0],z*[2,2])
+            sage: P1.distance_to_cusp_eg(H1.cusps()[0], z*[2,2])
             0.500000000000000
             sage: H2 = ExtendedHilbertModularGroup(10)
             sage: P2 = ExtendedHilbertPullback(H2)
-            sage: z =   ComplexPlaneProductElement([CC(0,1),CC(0,1)]);
+            sage: z =  ComplexPlaneProductElement([CC(0,1),CC(0,1)]);
             sage: P2.distance_to_cusp_eg(H2.cusps()[0], z)
             1.00000000000000
             sage: P2.distance_to_cusp_eg(H2.cusps()[1], z)
-            7.00000000000000
-            sage: c=NFCusp_wrt_lattice_ideal(H2.lattice_ideal(), 3, H2.lattice_ideal().number_field().gen()+1)
+            62.7694193059008
+            sage: c = NFCusp_wrt_lattice_ideal(H2.lattice_ideal(), 3, H2.lattice_ideal().number_field().gen()+1)
             sage: P2.distance_to_cusp_eg(c, z) # abs tol 1e-10
             6.32455532033676
             sage: z1 = ComplexPlaneProductElement([CC(-1.38,0.1),CC(0.72,0.1)]); z1
@@ -1160,10 +1143,10 @@ class ExtendedHilbertPullback(SageObject):
             sage: P2.distance_to_cusp_eg(c, z1) # abs tol 1e-10
             0.300834689631305
             sage: P2.distance_to_cusp_eg(H2.cusps()[1], z1)
-            5.01191181028675
+            831.857032071542
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: c = NFCusp_wrt_lattice_ideal(H4.lattice_ideal(), 3, H4.lattice_ideal().number_field().gen()+1)
             sage: P4.distance_to_cusp_eg(H4.cusps()[0], z1)
@@ -1253,7 +1236,7 @@ class ExtendedHilbertPullback(SageObject):
             6
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: P4.max_ideal_norm()
             1
@@ -1274,6 +1257,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: P1._matrix_BLambda_row_sum() # abs tol 1e-10
@@ -1292,27 +1276,27 @@ class ExtendedHilbertPullback(SageObject):
             sage: P2._matrix_BLambda_row_sum(1) # abs tol 1e-10
             1.81844645923207
 
-            sage: H3=ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
-            sage: P3=ExtendedHilbertPullback(H3)
+            sage: H3 = ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
+            sage: P3 = ExtendedHilbertPullback(H3)
             sage: P3._matrix_BLambda_row_sum()
-            15.7133517843634
+            11.4401733960187
             sage: P3._matrix_BLambda_row_sum(0)
-            6.06261225308888
+            3.92602305891654
             sage: P3._matrix_BLambda_row_sum(1)
-            5.37061649381160
+            4.47705699882431
             sage: P3._matrix_BLambda_row_sum(2)
-            4.28012303746290
+            3.03709333827786
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4._matrix_BLambda_row_sum()
-            2.63391579384963
+            1.31695789692482
             sage: P4._matrix_BLambda_row_sum(0)
-            1.31695789692482
+            0.658478948462408
             sage: P4._matrix_BLambda_row_sum(1)
-            1.31695789692482
+            0.658478948462408
 
         """
         B = self.basis_matrix_logarithmic_unit_lattice()
@@ -1363,23 +1347,23 @@ class ExtendedHilbertPullback(SageObject):
             sage: H3=ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
             sage: P3=ExtendedHilbertPullback(H3)
             sage: P3._exp_matrix_BLambda_row_sum() # abs tol 1e-7
-            6.67147667780289e6
+            92983.1335507812
             sage: P3._exp_matrix_BLambda_row_sum(0) # abs tol 1e-10
-            429.495924779268
+            50.7049256590498
             sage: P3._exp_matrix_BLambda_row_sum(1) # abs tol 1e-10
-            214.995370171897
+            87.9753796671955
             sage: P3._exp_matrix_BLambda_row_sum(2) # abs tol 1e-10
-            72.2493288346009
+            20.8445669901681
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: P4._exp_matrix_BLambda_row_sum()
-            13.9282032302755
+            3.73205080756888
             sage: P4._exp_matrix_BLambda_row_sum(0)
-            3.73205080756888
+            1.93185165257814
             sage: P4._exp_matrix_BLambda_row_sum(1)
-            3.73205080756888
+            1.93185165257814
 
 
         """
@@ -1399,6 +1383,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from hilbert_modgroup.all import *
+            sage: from extended_hilbert_modgroup.all import *
             sage: P1 = HilbertPullback(HilbertModularGroup(5))
             sage: P1.Di() # abs tol 1e-10
             1.6180339887498947
@@ -1426,14 +1411,14 @@ class ExtendedHilbertPullback(SageObject):
             1.4989928631309313
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: P4.Di()
-            3.7320508075688767
-            sage: P4.Di(0)
             1.9318516525781364
+            sage: P4.Di(0)
+            1.3899106635241476
             sage: P4.Di(1)
-            1.9318516525781362
+            1.3899106635241476
         """
         n = self.group().number_field().degree()
         return float(self.max_ideal_norm() ** (1 / n) * self._exp_matrix_BLambda_row_sum(i).sqrt())
@@ -1460,10 +1445,10 @@ class ExtendedHilbertPullback(SageObject):
             [1.673898962244985, 2.012192172612324, 1.4989928631309313]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
-            sage: P4._D()
-            [1.9318516525781364, 1.9318516525781362]
+            sage: P4.D()
+            [1.3899106635241476, 1.3899106635241476]
         """
         n = self.group().number_field().degree()
         return [self.Di(i) for i in range(n)]
@@ -1487,12 +1472,12 @@ class ExtendedHilbertPullback(SageObject):
             sage: P3 = ExtendedHilbertPullback(ExtendedHilbertModularGroup(K3))
             sage: P3._bound_for_closest_cusp() # abs tol 1e-10
             0.0138694259275406
-            sage: K = QuadraticField(3)
+            sage: K.<a> = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
-            sage: P4._bound_for_closet_cusp()
-            0.0358983848622454
+            sage: P4._bound_for_closest_cusp()
+            0.133974596215561
 
         """
         n = self.group().number_field().degree()
@@ -1513,9 +1498,10 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
-            sage: z=UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
             sage: P1._Dzi(z,0)
             1.27201964951407
             sage: z=UpperHalfPlaneProductElement([CC(0,0.5),CC(0,1)])
@@ -1539,16 +1525,16 @@ class ExtendedHilbertPullback(SageObject):
             sage: K3=P3.number_field()
             sage: z = UpperHalfPlaneProductElement([0+0.02*I,10+0.2*I,1+0.2*I])
             sage: P3._Dzi(z,0)
-            72.7600147269406
+            24.9999033526839
             sage: P3._Dzi(z,1)
-            51.4787281347537
+            32.9301591357191
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4._Dzi(z, 0)
-            1.93185165257814
+            1.38991066352415
 
         """
         n = self.group().number_field().degree()
@@ -1577,9 +1563,10 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
-            sage: z=UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
+            sage: z = UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
             sage: P1._Dz(z)
             [1.27201964951407, 1.27201964951407]
             sage: z=UpperHalfPlaneProductElement([CC(0,0.5),CC(0,1)])
@@ -1598,19 +1585,19 @@ class ExtendedHilbertPullback(SageObject):
             sage: P2._Dz(z) # abs tol 1e-10
             [24.4704299162553, 24.4704299162552]
             sage: x = ZZ['x'].gen()
-            sage: H3=ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
-            sage: P3=ExtendedHilbertPullback(H3)
-            sage: K3=P3.number_field()
+            sage: H3 = ExtendedHilbertModularGroup(NumberField(x^3-36*x-1, names='a'))
+            sage: P3 = ExtendedHilbertPullback(H3)
+            sage: K3= P3.number_field()
             sage: z = UpperHalfPlaneProductElement([0+0.02*I,10+0.2*I,1+0.2*I])
             sage: P3._Dz(z)
-            [72.7600147269406, 51.4787281347537, 29.8421537172252]
+            [24.9999033526839, 32.9301591357191, 16.0291204905260]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4._Dz(z)
-            [1.93185165257814, 1.93185165257814]
+            [1.38991066352415, 1.38991066352415]
         """
         n = self.number_field().degree()
         return [self._Dzi(z, i, initial_bd_d=initial_bd_d, use_initial_bd_d = use_initial_bd_d)
@@ -1623,13 +1610,14 @@ class ExtendedHilbertPullback(SageObject):
 
         EXAMPLES::
 
-            sage: from extendedhilbert_modgroup.all import *
+            sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
-            sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
+            sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P1._bound_for_sigma_norm(z) # abs tol 1e-8
             1.1111111111111112
-            sage: P1._bound_for_sigma_norm(z,1) # abs tol 1e-8
+            sage: P1._bound_for_sigma_norm(z, 1) # abs tol 1e-8
             1.0540925533894598
         """
         if not dist:
@@ -1656,6 +1644,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
@@ -1675,11 +1664,11 @@ class ExtendedHilbertPullback(SageObject):
             [3.605, 3.800]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P4._bound_for_sigma_embeddings(z)
-            [1.984, 2.091]
+            [1.428, 1.505]
 
         """
         self._check_upper_half_plane_element(z)
@@ -1705,6 +1694,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
@@ -1719,11 +1709,11 @@ class ExtendedHilbertPullback(SageObject):
 
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P4._bound_for_sigma_coordinates(z)
-            [2.038, 1.177]
+            [1.466, 0.8462]
 
 
         """
@@ -1760,6 +1750,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
@@ -1773,20 +1764,19 @@ class ExtendedHilbertPullback(SageObject):
             sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P2._bound_for_rho_embeddings(z, 0)
             [(-3.605, 3.605), (-3.420, 3.420)]
-            sage: b1,b2=H2.number_field().OK().gens();
-            sage: P2._bound_for_rho_embeddings(z, b2)
+            sage: b1,b2 = H2.number_field().OK().gens();
             sage: P2._bound_for_rho_embeddings(z, b2)
             [(-6.767, 0.4421), (-0.2571, 6.582)]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P4._bound_for_rho_embeddings(z, 0)
-            [(-1.984, 1.984), (-1.882, 1.882)]
+            [(-1.428, 1.428), (-1.354, 1.354)]
             sage: b1,b2=H4.number_field().OK().gens();
             sage: P4._bound_for_rho_embeddings(z, b1)
-            [(-0.9835, 2.984), (-0.8817, 2.882)]
+            [(-0.4271, 2.428), (-0.3538, 2.354)]
 
         """
         self._check_upper_half_plane_element(z)
@@ -1834,6 +1824,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
@@ -1852,11 +1843,11 @@ class ExtendedHilbertPullback(SageObject):
             [20.39, 20.39]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P4._bound_for_rho_coordinates(z, 0)
-            [3.904, 3.904]
+            [2.809, 2.809]
         """
         self._check_upper_half_plane_element(z)
         n = self.group().number_field().degree()
@@ -1906,6 +1897,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z=UpperHalfPlaneProductElement([CC(0,1),CC(0,1)])
@@ -1926,7 +1918,7 @@ class ExtendedHilbertPullback(SageObject):
             [0, -1, 1]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(2,1)])
             sage: P4._candidate_integers_sigma(z)
@@ -1986,12 +1978,12 @@ class ExtendedHilbertPullback(SageObject):
             sage: P2._get_lattice_and_ideal_basis()
              ([[1.00000000000000, -3.16227766016838], [1.00000000000000, 3.16227766016838]],
               [1, a])
-            sage: a=H2.OK().fractional_ideal(H2.OK().gen(1)+1)
+            sage: a= H2.OK().fractional_ideal(H2.OK().gen(1)+1)
             sage: P2._get_lattice_and_ideal_basis(a)
             ([[9.00000000000000, -2.16227766016838], [9.00000000000000, 4.16227766016838]], [9, a + 1])
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: P4._get_lattice_and_ideal_basis()
             ([[1.00000000000000, -1.73205080756888], [1.00000000000000, 1.73205080756888]],
@@ -2038,6 +2030,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z=UpperHalfPlaneProductElement([CC(1,1),CC(1,1)])
@@ -2053,11 +2046,11 @@ class ExtendedHilbertPullback(SageObject):
             [0, -1, 1, -2, 2, 3, a + 1, -a + 1, 4]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P4._candidate_integers_rho(z, 1)
-            [0, 1, a + 1, 2, -a + 1]
+            [0, 1, 2]
         """
         if return_polyhedron:
             if domain == 'boundingbox':
@@ -2123,6 +2116,7 @@ class ExtendedHilbertPullback(SageObject):
         EXAMPLES::
 
             sage: from extended_hilbert_modgroup.all import *
+            sage: from hilbert_modgroup.all import *
             sage: H1 = ExtendedHilbertModularGroup(5)
             sage: P1 = ExtendedHilbertPullback(H1)
             sage: z = UpperHalfPlaneProductElement([CC(0, 1),CC(0, 1)])
@@ -2130,11 +2124,11 @@ class ExtendedHilbertPullback(SageObject):
             [(1, 0), (-1, -1), (0, 1), (1, -1)]
             sage: K = QuadraticField(3)
             sage: lattice_ideal = K.different()
-            sage: H4 = ExtendedHilbertModularGroup(lattice_ideal)
+            sage: H4 = ExtendedHilbertModularGroup(K, lattice_ideal)
             sage: P4 = ExtendedHilbertPullback(H4)
             sage: z = UpperHalfPlaneProductElement([CC(1,1),CC(1,0.9)])
             sage: P4._candidate_closest_cusps(z)
-            [(1, 0), (-2, -1), (-a - 1, -1), (-1, -1), (a - 1, -1), (0, 1)]
+            [(1, 0), (-2, -1), (-1, -1), (0, 1)]
         """
         cusp_candidates = find_candidate_cusps(self, z, use_lll=use_lll,
                                                use_norm_bound=use_norm_bound,
@@ -2153,6 +2147,54 @@ class ExtendedHilbertPullback(SageObject):
             return cusp_candidates
 
     def reduce(self, z, return_map = False):
+        r"""
+        Reduce ``z`` to a point in the fundamental domain.
+
+        INPUT:
+
+        - ``z`` -- point in the upper half-plane
+        - ``return_map`` -- boolean (default False)
+          Set to ``True`` to return the map which performed the reduction.
+
+           EXAMPLES::
+              sage: from hilbert_modgroup.all import *
+              sage: from extended_hilbert_modgroup.all import *
+              sage: K5.<a> = QuadraticField(5)
+              sage: H5 = ExtendedHilbertModularGroup(K5)
+              sage: P5 = ExtendedHilbertPullback(H5)
+              sage: H5L = HilbertModularGroup(K5)
+              sage: P5L = HilbertPullback(H5L)
+              sage: z = UpperHalfPlaneProductElement([0.025+I/2,1.0233+I])
+              sage: P5.reduce(z)
+              [-0.656135336505516 + 0.762026955112429*I, 0.309364137820355 + 1.27887213029370*I]
+              sage: P5L.reduce(z)
+              [-0.656135336505516 + 0.762026955112429*I, 0.309364137820355 + 1.27887213029370*I]
+              sage: level_ideal = K5.fractional_ideal(2)
+              sage: H5 = ExtendedHilbertModularGroup(K5, level_ideal = level_ideal)
+              sage: P5 = ExtendedHilbertPullback(H5)
+              sage: P5.reduce(z)
+              [-1.03996773704886 + 0.345717054166798*I, 0.257798072768767 + 0.239024655533354*I]
+              sage: lattice_ideal = K5.different()
+              sage: H5 = ExtendedHilbertModularGroup(K5, lattice_ideal = lattice_ideal, level_ideal = level_ideal)
+              sage: P5 = ExtendedHilbertPullback(H5)
+              sage: P5.reduce(z)
+              [0.472213595499958 + 0.500000000000000*I, 0.576086404500042 + 1.00000000000000*I]
+              sage: K3.<a> = QuadraticField(3)
+              sage: H3 = ExtendedHilbertModularGroup(K3)
+              sage: H3L = HilbertModularGroup(K3)
+              sage: P3 = ExtendedHilbertPullback(H3)
+              sage: P3L = HilbertPullback(H3L)
+              sage: P3.reduce(z)
+              [-0.758778906564500 + 0.534561979912464*I, 0.866520262514823 + 1.82305340081506*I]
+              sage: P3L.reduce(z)
+              [-0.0997506234413965 + 1.99501246882793*I, -0.499867403002826 + 0.488485686507208*I]
+              sage: H3 = ExtendedHilbertModularGroup(K3, tp_units = False)
+              sage: P3 = ExtendedHilbertPullback(H3)
+              sage: P3.reduce(z)
+              [-0.0997506234413965 + 1.99501246882793*I, -0.499867403002826 + 0.488485686507208*I]
+
+
+        """
         K = self.number_field()
         lattice_ideal = self.group().lattice_ideal()
         level_ideal = K.fractional_ideal(1)
