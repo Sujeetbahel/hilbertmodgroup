@@ -577,7 +577,7 @@ class NFCusp_wrt_lattice_ideal(Element):
             if not Transformation:
                 return False
             else:
-                return False
+                return False, 0
         reps = list_of_representatives(N * self.lattice_ideal())
         alpha1 = NFCusp_wrt_lattice_ideal(self.lattice_ideal(), self, lreps = reps)
         alpha2 = NFCusp_wrt_lattice_ideal(self.lattice_ideal(), other, lreps = reps)
@@ -633,7 +633,6 @@ class NFCusp_wrt_lattice_ideal(Element):
             return False
         else:
             return False, 0
-
 
 def gens_reduced_wrt_lattice_ideal(lattice_ideal, ideal):
     """
@@ -824,7 +823,7 @@ def totally_positive_unit_group_generators(K):
         gen.append(s)
     return gen
 
-def units_mod_ideal(I, tp_units=True):
+def units_mod_ideal(I, tp_units = True):
     """
     Return the image of the totally positive unit group or the the squre of unit group inside quotient
     ring (O_K/I)^{*}

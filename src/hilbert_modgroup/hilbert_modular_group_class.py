@@ -552,7 +552,7 @@ class HilbertModularGroup_class(LinearMatrixGroup_generic):
 
         return self._ideal_cusp_representatives
 
-    def cusp_representative(self, cusp, return_map=False):
+    def cusp_representative(self, cusp, return_map = False):
         r"""
         Return a representative cusp and optionally a corresponding map.
 
@@ -597,7 +597,7 @@ class HilbertModularGroup_class(LinearMatrixGroup_generic):
         """
         for c in self.cusps():
             if return_map:
-                t, B = cusp.is_Gamma0_equivalent(c, self.level(), Transformation=True)
+                t, B = cusp.is_Gamma0_equivalent(c, self.level(), Transformation = True)
                 if t:
                     return c, self(B)
             elif cusp.is_Gamma0_equivalent(c, self.level()):

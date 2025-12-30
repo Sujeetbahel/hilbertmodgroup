@@ -2,6 +2,7 @@ import sage
 from sage.categories.groups import Groups
 from sage.groups.matrix_gps.linear import LinearMatrixGroup_generic
 from sage.matrix.constructor import Matrix, matrix
+from sage.misc.misc_c import prod
 from sage.rings.infinity import infinity
 from sage.rings.number_field.number_field import QuadraticField
 from sage.all import latex, Integer
@@ -9,7 +10,8 @@ from sage.misc.cachefunc import cached_method
 from sage.arith.misc import divisors
 from sage.modular.cusps_nf import list_of_representatives, NFCusps_ideal_reps_for_levelN
 from sage.modular.modsym.p1list_nf import psi
-from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import NFCusp_wrt_lattice_ideal
+from sage.misc.prandom import randint
+from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import NFCusp_wrt_lattice_ideal, fundamental_unit_generator
 from extended_hilbert_modgroup.extended_hilbert_modular_group_element import ExtendedHilbertModularGroupElement
 from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import totally_positive_unit_group_generators
 import logging
@@ -506,7 +508,7 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             True
         """
         return self([a, b, c, d])
-
+    
 
     def random_element(self, *args, **kwds):
         r"""
@@ -528,9 +530,18 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             True
 
         """
-        a = self.number_field().random_element(**kwds)
-        b = self.number_field().random_element(**kwds)
-        return self.T(a) * self.L(b)
+        a = self.lattice_ideal().inverse().random_element(**kwds)
+        b = (self.lattice_ideal() * self.level_ideal()).random_element(**kwds)
+        K = self.number_field()
+        UK = K.unit_group()
+        temp = UK.random_element(**kwds)
+        if self.tp_units:
+            while (not K(temp).is_totally_positive()):
+                temp = UK.random_element(**kwds)
+            u = temp
+        else:
+            u = temp
+        return self.E(u) * self.T(a) * self.L(b)
 
     #@cached_method
     #def cusps(self):
@@ -761,15 +772,17 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             a = 2.236067977499790? with respect to  lattice_ideal
 
         """
+        tp_units = self.tp_units()
         for c in self.cusps():
             if return_map:
-                t, B = cusp.is_Gamma0_wrt_lattice_ideal_equivalent(c, self.level_ideal(), Transformation = True)
+                t, B = cusp.is_Gamma0_wrt_lattice_ideal_equivalent(c, self.level_ideal(),
+                                                                   tp_units = tp_units,
+                                                                   Transformation = True)
                 if t:
                     return c, self(B)
-            else:
-                t = cusp.is_Gamma0_wrt_lattice_ideal_equivalent(c, self.level_ideal())
-                if t:
-                    return c
+            elif cusp.is_Gamma0_wrt_lattice_ideal_equivalent(c, self.level_ideal(),
+                                                                tp_units = tp_units):
+                return c
         raise ArithmeticError(f"Could not find cusp representative for {cusp}")
 
     def cusp_normalizing_map(self, cusp, inverse = False, check = False):
