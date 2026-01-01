@@ -93,6 +93,9 @@ class NFCusp_wrt_lattice_ideal(Element):
             else:
                 self.__a = R.zero
                 self.__b = K(a)
+        elif b is None:
+            self.__a = R.one()
+            self.__b = R.zero()
         else:
             cusp = NFCusp(K, a, b)
             self.__a = cusp.numerator()
@@ -468,12 +471,14 @@ class NFCusp_wrt_lattice_ideal(Element):
         G = self.ideal()
         if G.is_principal():
             H = G
+            g = (G * H).gens_reduced()[0]
         else:
             H = K.fractional_ideal((G.gens_reduced()[1]) ** 2) / G
+            g = G.gens_reduced()[1]**2
         assert (G * H).is_principal()
         a1 = self.__a
         a2 = self.__b
-        g = (G * H).gens_reduced()[0]
+        #g = (G * H).gens_reduced()[0]
         if self.is_infinity():
             H = K.OK().fractional_ideal(1)
             if return_H:
@@ -481,11 +486,12 @@ class NFCusp_wrt_lattice_ideal(Element):
             else:
                 return [1, 0, 0, 1]
         if not self:
+            assert -g/self.__b in (self.lattice_ideal().inverse() * H)
             #gens = gens_reduced_wrt_lattice_ideal(self.lattice_ideal(), self.lattice_ideal() * G)[1]
             if return_H:
-                return [self.__a, -1 /self.__b, self.__b, 0], H
+                return [self.__a, -g /self.__b, self.__b, 0], H
             else:
-                return [self.__a, -1 / self.__b, self.__b, 0]
+                return [self.__a, -g / self.__b, self.__b, 0]
         Ginv = G ** (-1)
         A1 = a1 * Ginv
         A2 = a2 * (self.lattice_ideal().inverse()) * Ginv
@@ -707,7 +713,7 @@ def ideal_wrt_lattice_ideal(lattice_ideal, x: tuple):
             True
     """
     K = lattice_ideal.number_field()
-    if x[1] == 0:
+    if x[1].is_zero():
         return K.OK().fractional_ideal(x[0])
     else:
         return x[0] * K.OK().fractional_ideal(1) + x[1] * (lattice_ideal.inverse())

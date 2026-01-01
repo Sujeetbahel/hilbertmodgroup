@@ -541,7 +541,8 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             u = temp
         else:
             u = temp
-        return self.E(u) * self.T(a) * self.L(b)
+        return  self(self.L(b))
+
 
     #@cached_method
     #def cusps(self):
