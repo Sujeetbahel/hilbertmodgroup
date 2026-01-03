@@ -30,6 +30,14 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def stable_floor(x, eps = 1e-12):
+    """
+    Deterministic replacement for floor(x + 1/2)
+    Breaks ties consistently when x is near half-integers.
+    """
+    return floor(x + 0.5 - eps)
+
+
 class ExtendedHilbertPullback(SageObject):
     def __init__(self, G):
         if not isinstance(G, ExtendedHilbertModularGroup_class):
@@ -292,10 +300,10 @@ class ExtendedHilbertPullback(SageObject):
         # To avoid overflow it is more efficient to apply the map,
         # e.g. compute (z*u**-k)/u**k instead of z*u**-(2k)
         if tp_units:
-            floors = [-floor(y  + 1 / 2) for y in self.Y(z)]
+            floors = [-stable_floor(y) for y in self.Y(z)]
             reducing_map = prod([self.group().E(u ** y) for u, y in zip(units, floors)])
         else:
-            floors = [-floor(y/2  + 1 / 2) for y in self.Y(z)]
+            floors = [-stable_floor(y / 2) for y in self.Y(z)]
             reducing_map = prod([self.group().E(u ** y) for u, y in zip(units, floors)])
         reduced_point = z.apply(reducing_map)
         if return_map:
@@ -584,7 +592,7 @@ class ExtendedHilbertPullback(SageObject):
         X = self.X(z, a)
         ideala = self._construct_ideal(a)
         basis = ideala.integral_basis()
-        correction = sum([b * floor(X[i] + 0.5) for i, b in enumerate(basis)])
+        correction = sum([b * stable_floor(X[i]) for i, b in enumerate(basis)])
         reduced_point = z - correction
         if return_map:
             return reduced_point, Matrix(2, 2, [1, -correction, 0, 1])
@@ -1484,7 +1492,7 @@ class ExtendedHilbertPullback(SageObject):
         return self.max_ideal_norm() ** (-1) * 2 ** (-n / 2.) / \
             self._exp_matrix_BLambda_row_sum()
 
-    def _Dzi(self, z, i, initial_bd_d=None, use_initial_bd_d=True):
+    def _Dzi(self, z, i, initial_bd_d = None, use_initial_bd_d = True):
         """
         Return the constant `a_i` used to bound the embeddings of sigma.
 
