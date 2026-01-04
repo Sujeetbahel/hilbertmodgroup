@@ -590,9 +590,12 @@ class ExtendedHilbertPullback(SageObject):
 
         """
         X = self.X(z, a)
+        for i in range(len(X)):
+            if abs(abs(X[i]) - 0.5) < 1e-12:
+                print("CUSPIDAL WALL HIT:", i, X[i])
         ideala = self._construct_ideal(a)
         basis = ideala.integral_basis()
-        correction = sum([b * stable_floor(X[i]) for i, b in enumerate(basis)])
+        correction = sum(b * stable_floor(X[i]) for i, b in enumerate(basis))
         reduced_point = z - correction
         if return_map:
             return reduced_point, Matrix(2, 2, [1, -correction, 0, 1])
@@ -1038,11 +1041,11 @@ class ExtendedHilbertPullback(SageObject):
 
         """
         self._check_upper_half_plane_element(z)
-        if not cusp:
+        if cusp is None:
             cusp = self.group().cusps()[0]
-        ideala = ((self.group().lattice_ideal()) ** -1) * cusp.ideal() ** -2
+        ideala = ((self.group().lattice_ideal()) ** -1) * (cusp.ideal() ** -2)
         # Then reduce with respect to the units, followed by reduction by translation with respect
-        # to the ideal a**-2
+        # to the ideal (lattice_ideal**-1)*(a**-2)
         if return_map:
             w, A = self.reduce_by_units(z, return_map = return_map)
             w, B = self.reduce_by_translations(w, ideala, return_map = return_map)
@@ -2154,6 +2157,18 @@ class ExtendedHilbertPullback(SageObject):
         else:
             return cusp_candidates
 
+    def level_reduction_matrix(self, M):
+        coset_matrices = self.group().coset_matrices()
+        Mat = None
+        for A in coset_matrices:
+            if A * M in self.group():
+                Mat = A
+                break
+        if Mat is None:
+            raise ValueError("No coset representative B satisfies B*M ∈ G.")
+        return Mat
+
+
     def reduce(self, z, return_map = False):
         r"""
         Reduce ``z`` to a point in the fundamental domain.
@@ -2219,14 +2234,7 @@ class ExtendedHilbertPullback(SageObject):
         w, B = P.reduce_in_cuspidal_region(w, c_rep, return_map = True)
         w = w.apply(A)
         M = A * B * A.inverse() * Umu
-        cosets = self.group().coset_matrices()
-        Mat = None
-        for B in cosets:
-            if B * M in self.group():
-                Mat = B
-                break
-        if Mat is None:
-            raise ValueError("No coset representative B satisfies B*M ∈ G.")
+        Mat = self.level_reduction_matrix(M)
         w = w.apply(Mat)
         if return_map:
             return w, Mat * M

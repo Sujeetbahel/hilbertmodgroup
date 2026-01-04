@@ -390,8 +390,9 @@ cdef class ExtendedHilbertModularGroupElement(MultiplicativeGroupElement):
         result = []
         if len(z) != len(self.complex_embeddings()):
             raise ValueError("Need element of the same degree!")
+        CF = z.base_ring()
         for i, Aemb in enumerate(self.complex_embeddings()):
-            a, b, c, d = Aemb.list()
+            a, b, c, d = [CF(x) for x in Aemb.list()]
             result.append((a * z[i] + b) / (c * z[i] + d))
         return z.parent()(result)
 

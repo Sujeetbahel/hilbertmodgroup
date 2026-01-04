@@ -11,7 +11,10 @@ from sage.arith.misc import divisors
 from sage.modular.cusps_nf import list_of_representatives, NFCusps_ideal_reps_for_levelN
 from sage.modular.modsym.p1list_nf import psi
 from sage.misc.prandom import randint
-from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import NFCusp_wrt_lattice_ideal, fundamental_unit_generator
+from sage.rings.number_field.number_field_ideal import ZZ
+
+from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import (NFCusp_wrt_lattice_ideal,
+                                            fundamental_unit_generator, totally_positive_unit_group_generators)
 from extended_hilbert_modgroup.extended_hilbert_modular_group_element import ExtendedHilbertModularGroupElement
 from extended_hilbert_modgroup.cusp_nf_wrt_lattice_ideal import totally_positive_unit_group_generators
 import logging
@@ -508,18 +511,15 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             True
         """
         return self([a, b, c, d])
-    
 
-    def random_element(self, *args, **kwds):
+    def random_element(self, matrix_type = None, **kwds):
         r"""
         Return a 'random' element of this Extended Hilbert Modular Group.
 
         INPUT:
 
-        - `args`, `kwds` -- arguments passed to the base ring's random element function
-                            and are in turn passed to the random integer function.
-                            See the documentation for "ZZ.random_element()" for details.
-
+        - ``mode`` -- one of {'Lower', 'Upper', 'unit'} or None (default)
+        - ``kwds`` -- passed to the random element generators
 
         EXAMPLES::
 
@@ -528,21 +528,34 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             sage: A = H.random_element()
             sage: A in H
             True
-
         """
+        x = kwds.pop('x', None)
+        y = kwds.pop('y', None)
         a = self.lattice_ideal().inverse().random_element(**kwds)
         b = (self.lattice_ideal() * self.level_ideal()).random_element(**kwds)
         K = self.number_field()
-        UK = K.unit_group()
-        temp = UK.random_element(**kwds)
+        if x is None:
+            x = -5
+        if y is None:
+            y = 5
         if self.tp_units:
-            while (not K(temp).is_totally_positive()):
-                temp = UK.random_element(**kwds)
-            u = temp
+            gens = totally_positive_unit_group_generators(K)
+            exponents = [ZZ.random_element(x, y) for _ in gens]
+            u = prod(g ** e for g, e in zip(gens, exponents))
         else:
-            u = temp
-        return  self(self.L(b))
+            gens = fundamental_unit_generator(K)
+            exponents = [ZZ.random_element(x, y) for x, y in gens]
+            u = prod(g ** e for g, e in zip(gens, exponents))
+        if matrix_type == 'Lower':
+            return self(self.L(b))
 
+        if matrix_type == 'Upper':
+            return self(self.T(a))
+
+        if matrix_type == 'unit':
+            return self(self.E(u))
+
+        return self(self.E(u) * self.T(a) * self.L(b))
 
     #@cached_method
     #def cusps(self):
