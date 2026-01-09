@@ -1226,7 +1226,7 @@ class ExtendedHilbertPullback(SageObject):
         return Polyhedron(vertices, base_ring = RDF)
 
     @cached_method
-    def max_ideal_norm(self):  # Doing
+    def max_ideal_norm(self):  # Need to work
         r"""
         Compute the maximum of the norms of all ideal representatives in the ideal class group.
 
@@ -1255,7 +1255,7 @@ class ExtendedHilbertPullback(SageObject):
         """
         return max([x.norm() for x in self.group().ideal_cusp_representatives()])
 
-    def _matrix_BLambda_row_sum(self, i = None):
+    def _matrix_BLambda_row_sum(self, i = None):               #Need to work
         r"""
         Compute ``r_i(B_{\Lambda}) = sum_j |b_ij|`` or ``sum_ij |b_ij|``.
 
@@ -1310,18 +1310,23 @@ class ExtendedHilbertPullback(SageObject):
             0.658478948462408
 
         """
-        B = self.basis_matrix_logarithmic_unit_lattice()
-        tp_units = self.group().tp_units()
-        if tp_units:
-            if i is not None:
-                return 1/2* sum([abs(x) for x in B[i]])
-            else:
-                return 1/2 * sum([sum([abs(x) for x in row]) for row in B])
+        K = self.number_field()
+        lattice_ideal = self.group().lattice_ideal()
+        #level_ideal = self.group().level_ideal()
+        H = ExtendedHilbertModularGroup(K, lattice_ideal = lattice_ideal, tp_units = False)
+        P = ExtendedHilbertPullback(H)
+        B = P.basis_matrix_logarithmic_unit_lattice()
+        #tp_units = self.group().tp_units()
+        #if tp_units:
+        #    if i is not None:
+        #        return 1/2* sum([abs(x) for x in B[i]])
+        #    else:
+        #        return 1/2 * sum([sum([abs(x) for x in row]) for row in B])
+        #else:
+        if i is not None:
+            return sum([abs(x) for x in B[i]])
         else:
-            if i is not None:
-                return sum([abs(x) for x in B[i]])
-            else:
-                return sum([sum([abs(x) for x in row]) for row in B])
+            return sum([sum([abs(x) for x in row]) for row in B])
 
     @cached_method
     def _exp_matrix_BLambda_row_sum(self,  i = None):  # Doing
@@ -1552,7 +1557,8 @@ class ExtendedHilbertPullback(SageObject):
         if not use_initial_bd_d:
             return self.Di(i) * z.imag_norm() ** (-1 / (2 * n))
         dist_to_infinity_bd = z.imag_norm() ** (-1 / 2)
-        dist_to_zero_bd = (z.abs_square_norm() / z.imag_norm()) ** (0.5)
+        dist_to_zero_bd = (((self.group().lattice_ideal().inverse().norm())**-1)*
+                           (z.abs_square_norm() / z.imag_norm()) ** (0.5))  #Need to work
         if initial_bd_d:
             d = min(initial_bd_d, dist_to_infinity_bd, dist_to_zero_bd)
         else:
@@ -1611,7 +1617,7 @@ class ExtendedHilbertPullback(SageObject):
             [1.38991066352415, 1.38991066352415]
         """
         n = self.number_field().degree()
-        return [self._Dzi(z, i, initial_bd_d=initial_bd_d, use_initial_bd_d = use_initial_bd_d)
+        return [self._Dzi(z, i, initial_bd_d = initial_bd_d, use_initial_bd_d = use_initial_bd_d)
                 for i in range(n)]
 
     @cached_method()
@@ -1683,7 +1689,7 @@ class ExtendedHilbertPullback(SageObject):
 
         """
         self._check_upper_half_plane_element(z)
-        d = self._Dz(z, initial_bd_d=initial_bd_d, use_initial_bd_d = use_initial_bd_d)
+        d = self._Dz(z, initial_bd_d = initial_bd_d, use_initial_bd_d = use_initial_bd_d)
         return [upper(d[i] * y ** (-1 / 2), prec = prec) for i, y in enumerate(z.imag())]
 
     def _bound_for_sigma_coordinates(self, z, initial_bd_d = None, prec = 16, use_initial_bd_d = True):
