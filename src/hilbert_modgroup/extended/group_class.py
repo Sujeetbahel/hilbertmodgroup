@@ -697,15 +697,14 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             u = prod(g**e for g, e in zip(gens, exponents, strict=False))
         if matrix_type == "Lower":
             return self(self.L(b))
-
-        if matrix_type == "Upper":
+        elif matrix_type == "Upper":
             return self(self.T(a))
-
-        if matrix_type == "Unit":
+        elif matrix_type == "Unit":
             return self(self.E(u))
-        if matrix_type == "Lift":
+        elif matrix_type == "Lift":
             return self(self.R(d))
-
+        elif matrix_type:
+            raise ValueError(f"Unknown matrix_type: {matrix_type}")
         return self(self.R(d) * self.E(u) * self.T(a) * self.L(b))
 
     @cached_method
