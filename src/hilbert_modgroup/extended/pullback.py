@@ -184,18 +184,17 @@ class ExtendedHilbertPullback(SageObject):
         fundamental units and the logarithmic unit lattice -- do not depend
         on the level::
 
-            sage: H_trivial = ExtendedHilbertModularGroup(K, lattice_ideal=lattice_ideal)
-            sage: P_trivial = ExtendedHilbertPullback(H_trivial)
-            sage: P.fundamental_units() == P_trivial.fundamental_units()
+            sage: H_triv = ExtendedHilbertModularGroup(K, lattice_ideal=lattice_ideal)
+            sage: P_triv = ExtendedHilbertPullback(H_triv)
+            sage: P.fundamental_units() == P_triv.fundamental_units()
             True
-            sage: (
-                P.basis_matrix_logarithmic_unit_lattice()
-                == P_trivial.basis_matrix_logarithmic_unit_lattice()
-            )
+            sage: B = P.basis_matrix_logarithmic_unit_lattice()
+            sage: B_triv = P_triv.basis_matrix_logarithmic_unit_lattice()
+            sage: B == B_triv
             True
-            sage: P.ambient_group().lattice_ideal() == H_trivial.lattice_ideal()
+            sage: P.ambient_group().lattice_ideal() == H_triv.lattice_ideal()
             True
-            sage: P.ambient_group().level_ideal() == H_trivial.level_ideal()
+            sage: P.ambient_group().level_ideal() == H_triv.level_ideal()
             True
         """
         return self._ambient_group
