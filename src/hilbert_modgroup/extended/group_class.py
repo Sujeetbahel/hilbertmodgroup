@@ -317,9 +317,9 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             sage: H.ambient_group().level_ideal()
             Fractional ideal (1)
         """
-        return ExtendedHilbertModularGroup(self.number_field(),
-                                           lattice_ideal = self.lattice_ideal(),
-                                           tp_units = self.tp_units())
+        return ExtendedHilbertModularGroup(
+            self.number_field(), lattice_ideal=self.lattice_ideal(), tp_units=self.tp_units()
+        )
 
     def __contains__(self, x):
         r"""
@@ -429,7 +429,9 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         tp_units = self.tp_units()
         level_ideal = self.level_ideal()
         number_field = self.number_field()
-        coprime_residue = [u for u in level_ideal.residues() if u != 0 and level_ideal.is_coprime(u)]
+        coprime_residue = [
+            u for u in level_ideal.residues() if u != 0 and level_ideal.is_coprime(u)
+        ]
         for x in coprime_residue:
             gens.append(self.R(x))
         for x in self.lattice_ideal().inverse().basis():
@@ -445,11 +447,11 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
     @cached_method
     def R(self, d):
         """
-        Return the lift of any element in (OK/(level_ideal))^*  in self:
+        Return the lift of any element in (OK/(level_ideal))^* in self.
 
         INPUT:
 
-        - ``d`` -- integer in number field coprime to d (default=1)
+        - ``d`` -- element of the number field, coprime to ``self.level_ideal()``
 
         EXAMPLES::
 
@@ -470,7 +472,8 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         Lreps = list_of_representatives(level_ideal * d)
         Lds = [
             P * lattice_ideal * level_ideal
-            for P in Lreps if (P * lattice_ideal * level_ideal).is_principal()
+            for P in Lreps
+            if (P * lattice_ideal * level_ideal).is_principal()
         ]
         C = Lds[0]
         c = (C).gens_reduced()[0]
@@ -480,7 +483,6 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         b = -r / c
         a = (1 - r) / d
         return self([a, b, c, d])
-
 
     @cached_method
     def S(self):
@@ -614,7 +616,8 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
 
         INPUT:
 
-        - ``mode`` -- one of {'Lower', 'Upper', 'unit'} or None (default)
+        - ``matrix_type`` -- one of {'Lower', 'Upper', 'Unit', 'Lift'} or None
+          (default). If None, returns a product of all four factors.
         - ``kwds`` -- passed to the random element generators
 
         EXAMPLES::
@@ -624,6 +627,48 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
             sage: A = H.random_element()
             sage: A in H
             True
+
+        The ``"Lower"`` mode returns a lower-triangular matrix with ones on the
+        diagonal::
+
+            sage: A = H.random_element(matrix_type="Lower")
+            sage: A in H
+            True
+            sage: A[0, 0] == 1 and A[0, 1] == 0 and A[1, 1] == 1
+            True
+
+        The ``"Upper"`` mode returns an upper-triangular matrix with ones on the
+        diagonal::
+
+            sage: A = H.random_element(matrix_type="Upper")
+            sage: A in H
+            True
+            sage: A[0, 0] == 1 and A[1, 0] == 0 and A[1, 1] == 1
+            True
+
+        The ``"Unit"`` mode returns a diagonal matrix coming from a unit::
+
+            sage: A = H.random_element(matrix_type="Unit")
+            sage: A in H
+            True
+            sage: A[0, 1] == 0 and A[1, 0] == 0
+            True
+
+        The ``"Lift"`` mode returns a lift of an element of (O_K/N)^* into the
+        ambient group::
+
+            sage: K.<a> = QuadraticField(2)
+            sage: HN = ExtendedHilbertModularGroup(K, level_ideal=K.fractional_ideal(3))
+            sage: A = HN.random_element(matrix_type="Lift")
+            sage: A in HN.ambient_group()
+            True
+
+        With no ``matrix_type`` set, the result is a product of all four
+        factors::
+
+            sage: A = HN.random_element()
+            sage: A in HN.ambient_group()
+            True
         """
         x = kwds.pop("x", None)
         y = kwds.pop("y", None)
@@ -631,9 +676,11 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         b = (self.lattice_ideal() * self.level_ideal()).random_element(**kwds)
         K = self.number_field()
         level_ideal = self.level_ideal()
-        coprime_residue = [u for u in level_ideal.residues() if u != 0 and level_ideal.is_coprime(u)]
-        if coprime_residue == []:
-            d =1
+        coprime_residue = [
+            u for u in level_ideal.residues() if u != 0 and level_ideal.is_coprime(u)
+        ]
+        if not coprime_residue:
+            d = 1
         else:
             d = choice(coprime_residue)
         if x is None:
@@ -659,7 +706,7 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
         if matrix_type == "Lift":
             return self(self.R(d))
 
-        return self(self.R(u) * self.E(u) * self.T(a) * self.L(b))
+        return self(self.R(d) * self.E(u) * self.T(a) * self.L(b))
 
     @cached_method
     def cusps(self):
@@ -724,7 +771,6 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
                         A2 = newb * B.inverse()
                         r = A2.element_1_mod(A1)
                         a1 = (r / newb) * g
-                        #a2 = -(1 - r) / c * g
                         Lcusps.append(NFCusp_wrt_lattice_ideal(lattice_ideal, a1, c, lreps=Lreps))
         cusp = NFCusp_wrt_lattice_ideal(self.lattice_ideal(), 1, 0)
         for c in Lcusps:
@@ -1034,22 +1080,23 @@ class ExtendedHilbertModularGroup_class(LinearMatrixGroup_generic):
                     it = K.primes_of_degree_one_iter()
                     Dp = next(it)
                     while not Dp.is_coprime(N) or not (Dp * D * lattice_ideal).is_principal():
-                       Dp = next(it)
+                        Dp = next(it)
                     c = (D * lattice_ideal * Dp).gens_reduced()[0]
                 I = D + N / D
                 for r in (N / D).residues():
                     if I.is_coprime(r):
-                       M = D.prime_to_idealM_part(N / D)
-                       u = (Dp * M).element_1_mod(N / D)
-                       d = u * r + (1 - u)
-                       if d.is_zero():
-                           L.append(H.create_element(1, -1 / c, c, d))
-                       else:
-                           B = K.fractional_ideal(c * lattice_ideal.inverse()).element_1_mod(
-                               K.fractional_ideal(d))
-                           b = -B / c
-                           a = (1 - B) / d
-                           L.append(H.create_element(a, b, c, d))
+                        M = D.prime_to_idealM_part(N / D)
+                        u = (Dp * M).element_1_mod(N / D)
+                        d = u * r + (1 - u)
+                        if d.is_zero():
+                            L.append(H.create_element(1, -1 / c, c, d))
+                        else:
+                            B = K.fractional_ideal(c * lattice_ideal.inverse()).element_1_mod(
+                                K.fractional_ideal(d)
+                            )
+                            b = -B / c
+                            a = (1 - B) / d
+                            L.append(H.create_element(a, b, c, d))
         if not len(L) == psi(N):
             raise ValueError("Condition is not satisfying. Check again")
         return L

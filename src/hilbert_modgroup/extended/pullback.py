@@ -93,7 +93,6 @@ class ExtendedHilbertPullback(SageObject):
         self._group = G
         self._ambient_group = G.ambient_group()
 
-
     def __eq__(self, other):
         r"""
         Check if ``self`` is equal to ``other``.
@@ -431,10 +430,14 @@ class ExtendedHilbertPullback(SageObject):
         # e.g. compute (z*u**-k)/u**k instead of z*u**-(2k)
         if tp_units:
             floors = [-stable_floor(y) for y in self.Y(z)]
-            reducing_map = prod([self.ambient_group().E(u**y) for u, y in zip(units, floors, strict=False)])
+            reducing_map = prod(
+                [self.ambient_group().E(u**y) for u, y in zip(units, floors, strict=False)]
+            )
         else:
             floors = [-stable_floor(y / 2) for y in self.Y(z)]
-            reducing_map = prod([self.ambient_group().E(u**y) for u, y in zip(units, floors, strict=False)])
+            reducing_map = prod(
+                [self.ambient_group().E(u**y) for u, y in zip(units, floors, strict=False)]
+            )
         reduced_point = z.apply(reducing_map)
         if return_map:
             return reduced_point, reducing_map
