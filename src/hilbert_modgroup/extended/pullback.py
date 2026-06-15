@@ -179,6 +179,24 @@ class ExtendedHilbertPullback(SageObject):
             Hilbert modular group PGL_2^+(...) ... x^2 - 5 with a = 2.236067977499790? ...
             sage: P.ambient_group().level_ideal()
             Fractional ideal (1)
+
+        Quantities derived from the ambient group only -- such as the
+        fundamental units and the logarithmic unit lattice -- do not depend
+        on the level::
+
+            sage: H_trivial = ExtendedHilbertModularGroup(K, lattice_ideal=lattice_ideal)
+            sage: P_trivial = ExtendedHilbertPullback(H_trivial)
+            sage: P.fundamental_units() == P_trivial.fundamental_units()
+            True
+            sage: (
+                P.basis_matrix_logarithmic_unit_lattice()
+                == P_trivial.basis_matrix_logarithmic_unit_lattice()
+            )
+            True
+            sage: P.ambient_group().lattice_ideal() == H_trivial.lattice_ideal()
+            True
+            sage: P.ambient_group().level_ideal() == H_trivial.level_ideal()
+            True
         """
         return self._ambient_group
 
